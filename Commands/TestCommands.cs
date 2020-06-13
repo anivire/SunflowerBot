@@ -12,24 +12,6 @@ namespace SunflowerBot.Commands
     
     public class TestCommands : BaseCommandModule
     {
-        [Command("test")]
-        [Description("Тестовая команда.")]
-        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Test(CommandContext ctx)
-        {
-            await ctx.Channel.SendMessageAsync("YEP :sunny: COCK").ConfigureAwait(false);
-        }
-        
-        [Command("summ")]
-        [Description("Сложение чисел.")]
-        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Summ(CommandContext ctx,
-            [Description("Первое число")]int numberOne,
-            [Description("Второе число")]int numberTwo)
-        {
-            await ctx.Channel.SendMessageAsync($"{numberOne + numberTwo}").ConfigureAwait(false);
-        }
-
         [Command("respondmessage")]
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
         public async Task RespondMessage(CommandContext ctx)
