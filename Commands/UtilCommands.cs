@@ -43,7 +43,7 @@ namespace SunflowerBot.Commands
         [Command("roll")]
         [Description("Получение случайного числа")]
         [RequireRoles(RoleCheckMode.All)]
-        public async Task Roll(CommandContext ctx, [Description("Максимальное число")]int max)
+        public async Task Roll(CommandContext ctx, [Description("Минимальное число")]int min, [Description("Максимальное число")]int max)
         {
             var rnd = new Random();
             
@@ -52,9 +52,9 @@ namespace SunflowerBot.Commands
                     Color = DiscordColor.Gold
                 };
 
-            if (max > 1)
+            if (max >= 1 && max > min)
             {
-                rollEmbed.WithDescription($"Максимальное число `{max}`\n🎲 Случайное число: {rnd.Next(1, max + 1)}");
+                rollEmbed.WithDescription($"Минимальное число `{min}`, максимальное `{max}`\n🎲 Случайное число: {rnd.Next(min, max + 1)}");
                 rollEmbed.WithFooter("Получение случайного числа.", null);
 
                 var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);

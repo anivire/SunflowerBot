@@ -61,6 +61,23 @@ namespace SunflowerBot.Commands
             }
 
             //await joinMessage.DeleteAsync().ConfigureAwait(false); // Удаление сообщения после того как пользователь отреагировал на сообщение
-        }       
+        }    
+
+        [Command("info")]
+        [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
+        [RequireRoles(RoleCheckMode.All)]
+        public async Task Info(CommandContext ctx)
+        {
+            var joinEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Спасибо за то, что находитесь здесь!",
+                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
+                Color = DiscordColor.Gold,
+            };
+            joinEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
+            joinEmbed.WithFooter("Информация и ссылки.", null);
+
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
+        }   
     }
 }
