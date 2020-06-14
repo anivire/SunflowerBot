@@ -25,9 +25,6 @@ namespace SunflowerBot.Commands
                 Description = $":sunflower: Выбери эмодзи для получения роли.\n\nДанная роль позволяет разрешать упоминать вас ({role.Mention}), во время различных событий, для получения солнышек и других наград.\n\nПосле выбора эмодзи сообщение удалится и вы получите роль. Чтобы отписаться от рассылки наберите команду вновь и отреагируюте эмодзи.",
                 Color = DiscordColor.Gold,
             };
-
-            joinEmbed.WithFooter("Получение роли с уведомлениями.", null);
-
             // Отображения сообщения в чате Дискорда
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
 
@@ -45,6 +42,12 @@ namespace SunflowerBot.Commands
 
             // Если поставленная эмодзи равна указанной, то
             
+            if (reactionResult.Result.Emoji == accept) 
+            {
+                await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
+            }
+
+            /*
             while (reactionResult.Result.Emoji == accept)  
             {
                 // Выдача роли пользователю
@@ -59,25 +62,9 @@ namespace SunflowerBot.Commands
                     break;
                 }  
             }
+            */
 
-            //await joinMessage.DeleteAsync().ConfigureAwait(false); // Удаление сообщения после того как пользователь отреагировал на сообщение
+            await joinMessage.DeleteAsync().ConfigureAwait(false); // Удаление сообщения после того как пользователь отреагировал на сообщение
         }    
-
-        [Command("info")]
-        [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        [RequireRoles(RoleCheckMode.All)]
-        public async Task Info(CommandContext ctx)
-        {
-            var joinEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Спасибо за то, что находитесь здесь!",
-                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
-                Color = DiscordColor.Gold,
-            };
-            joinEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
-            joinEmbed.WithFooter("Информация и ссылки.", null);
-
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
-        }   
     }
 }
