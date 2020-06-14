@@ -27,6 +27,7 @@ namespace SunflowerBot.Commands
                 Description = $":sunflower: Выбери эмодзи для получения роли.\n\nДанная роль позволяет разрешать упоминать вас ({role.Mention}), во время различных событий, для получения солнышек и других наград.\n\nПосле выбора эмодзи сообщение удалится и вы получите роль. Чтобы отписаться от рассылки наберите команду вновь и отреагируюте эмодзи.",
                 Color = DiscordColor.Gold,
             };
+            
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
 
             var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
