@@ -50,10 +50,10 @@ namespace SunflowerBot.Commands
                 {
                     Color = DiscordColor.Gold
                 };
-
+            
             if (max >= 1 && max > min)
             {
-                rollEmbed.WithDescription($"Минимальное число `{min}`, максимальное `{max}`\n🎲 Случайное число: {rnd.Next(min, max + 1)}");
+                rollEmbed.WithDescription($"🎲 Случайное число: {rnd.Next(min, max + 1)}");
 
                 var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
             }
