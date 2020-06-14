@@ -1,3 +1,4 @@
+using SunflowerBot.Attributes;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Commands​Next.Converters;
 using DSharpPlus.CommandsNext.Attributes;
@@ -14,6 +15,7 @@ namespace SunflowerBot.Commands
     {
         [Command("sunny")]
         [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
+        [RequireCategories(ChannelCheckMode.Any, "Sunflower")]
         [RequireRoles(RoleCheckMode.All)]
         public async Task Sunny(CommandContext ctx)
         {
@@ -25,12 +27,10 @@ namespace SunflowerBot.Commands
                 Description = $":sunflower: Выбери эмодзи для получения роли.\n\nДанная роль позволяет разрешать упоминать вас ({role.Mention}), во время различных событий, для получения солнышек и других наград.\n\nПосле выбора эмодзи сообщение удалится и вы получите роль. Чтобы отписаться от рассылки наберите команду вновь и отреагируюте эмодзи.",
                 Color = DiscordColor.Gold,
             };
-            // Отображения сообщения в чате Дискорда
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
 
             var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
 
-            // Создание эмодзи ботом при написании сообщения им же
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);   
 
             var interactivity = ctx.Client.GetInteractivity();
@@ -40,8 +40,6 @@ namespace SunflowerBot.Commands
                 x.User == ctx.User &&
                 (x.Emoji == accept)).ConfigureAwait(false);
 
-            // Если поставленная эмодзи равна указанной, то
-            
             if (reactionResult.Result.Emoji == accept) 
             {
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
@@ -64,7 +62,7 @@ namespace SunflowerBot.Commands
             }
             */
 
-            await joinMessage.DeleteAsync().ConfigureAwait(false); // Удаление сообщения после того как пользователь отреагировал на сообщение
+            await joinMessage.DeleteAsync().ConfigureAwait(false);
         }    
     }
 }

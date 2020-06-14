@@ -42,7 +42,7 @@ namespace SunflowerBot.Attributes
 
                 ChannelCheckMode.None => Task.FromResult(!contains),
 
-                ChannelCheckMode.MineOrParentAny => Task.FromResult(false),
+                _ => Task.FromResult(false),
            };
         }
     }
