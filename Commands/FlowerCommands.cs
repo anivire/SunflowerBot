@@ -15,7 +15,7 @@ namespace SunflowerBot.Commands
     {
         [Command("sunny")]
         [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        [RequireCategories(ChannelCheckMode.Any, "Sunflower")]
+        //[RequireCategories(ChannelCheckMode.Any, "Sunflower")]
         [RequireRoles(RoleCheckMode.All)]
         public async Task Sunny(CommandContext ctx)
         {
@@ -46,52 +46,26 @@ namespace SunflowerBot.Commands
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
             }
 
-            /*
-            while (reactionResult.Result.Emoji == accept)  
-            {
-                // Выдача роли пользователю
-                await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
-                var wait = await interactivity.WaitForReactionAsync(
-                    x => x.Message == joinMessage && 
-                    x.User == ctx.User &&
-                    (x.Emoji == accept)).ConfigureAwait(false); 
-                if (wait.Result.Emoji == accept)
-                {
-                    await ctx.Member.RevokeRoleAsync(role).ConfigureAwait(false);
-                    break;
-                }  
-            }
-            */
-
             await joinMessage.DeleteAsync().ConfigureAwait(false);
         }    
-
-        [Command("pool")]
+        /*
+        [Command("giveaway")]
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Poll(CommandContext ctx, TimeSpan duration, params DiscordEmoji[] emojiOptions)
+        public async Task Giveaway(CommandContext ctx, TimeSpan duration, int sunCount)
         {
+            Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
-            var options = emojiOptions.Select(x => x.ToString());
 
-            var pollEmbed = new DiscordEmbedBuilder
+            var giveawayEmbed = new DiscordEmbedBuilder
             {
-                Title = "Poll",
-                Description = string.Join(" ", options)
+                Title = "Раздача солнышек",
+                Description = $"В случае вашей победы Вы получите **{sunCount}** солнышек!",
+                Color = DiscordColor.Gold
             };
+            giveawayEmbed.WithFooter($"Оставшееся время - {duration}", null);
 
-            var pollMessage = await ctx.Channel.SendMessageAsync(embed: pollEmbed).ConfigureAwait(false);
-
-            foreach (var option in emojiOptions)
-            {
-                await pollMessage.CreateReactionAsync(option).ConfigureAwait(false);
-            }
-
-            var result = await interactivity.CollectReactionsAsync(pollMessage, duration).ConfigureAwait(false);
-            var distinctResult = result.Distinct();
-
-            var results = distinctResult.Select(x => $"{x.Emoji}: {x.Total}");
-
-            await ctx.Channel.SendMessageAsync(string.Join("\n", results)).ConfigureAwait(false);
+            var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
+        */
         }
     }
 }

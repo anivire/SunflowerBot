@@ -20,14 +20,14 @@ namespace SunflowerBot.Commands
             var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
             await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
 
-            var clearEmbed = new DiscordEmbedBuilder
+            var delEmbed = new DiscordEmbedBuilder
             {
                  Color = DiscordColor.Gold
             };
 
-            clearEmbed.WithDescription($"Удалено {numberMessages} сообщений");
+            delEmbed.WithDescription($"Удалено {numberMessages} сообщений");
 
-            var clearMessage = await ctx.Channel.SendMessageAsync(embed: clearEmbed).ConfigureAwait(false);
+            var clearMessage = await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
         }
 
         [Command("deln")]
@@ -70,15 +70,15 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.All)]
         public async Task Info(CommandContext ctx)
         {
-            var joinEmbed = new DiscordEmbedBuilder
+            var infoEmbed = new DiscordEmbedBuilder
             {
                 Title = "Спасибо за то, что находитесь здесь!",
                 Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
                 Color = DiscordColor.Gold,
             };
-            joinEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
+            infoEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
 
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);   
         }   
 
         [Command("rockpaperscissors")]
