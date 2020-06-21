@@ -65,22 +65,6 @@ namespace SunflowerBot.Commands
             }
         }
 
-        [Command("info")]
-        [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        [RequireRoles(RoleCheckMode.All)]
-        public async Task Info(CommandContext ctx)
-        {
-            var infoEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Спасибо за то, что находитесь здесь!",
-                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
-                Color = DiscordColor.Gold,
-            };
-            infoEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
-
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);   
-        }   
-
         [Command("rockpaperscissors")]
         [Description("Игра - камень, ножницы, бумага")]
         [RequireRoles(RoleCheckMode.All)]

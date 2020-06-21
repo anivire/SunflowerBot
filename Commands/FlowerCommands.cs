@@ -66,6 +66,39 @@ namespace SunflowerBot.Commands
 
             var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
         */
-        }
+
+        [Command("info")]
+        [Description("Информация и ссылки")]
+        [RequireRoles(RoleCheckMode.All)]
+        public async Task Info(CommandContext ctx)
+        {
+            var infoEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Спасибо за то, что находитесь здесь!",
+                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
+                Color = DiscordColor.Gold,
+            };
+            infoEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
+
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);   
+        }  
+
+        
+        [Command("patreon")]
+        [Description("Платный контент")]
+        [RequireRoles(RoleCheckMode.All)]
+        public async Task Patreon(CommandContext ctx)
+        {
+            var patreonEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Уникальный контент для платных подписчиков!",
+                Description = $"У вас есть возможно подписаться за 1$ или 3$ на Patreon, чтобы получить доступ к уникальному контенту, секретным эвентам и преимуществам в Discord.\n\nPatreon: https://www.patreon.com/aniv1re",
+                Color = DiscordColor.Gold,
+            };
+            patreonEmbed.WithThumbnail("https://cahoicatam.com/images/patreon-logo-png-white-1.png", 1000, 500);
+            patreonEmbed.WithFooter("Все преимущества от тиров Patreon'а даёт также платная подписка на Twitch");
+
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: patreonEmbed).ConfigureAwait(false);   
+        }   
     }
 }
