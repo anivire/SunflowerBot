@@ -64,19 +64,5 @@ namespace SunflowerBot.Commands
                 var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
             }
         }
-
-        [Command("rockpaperscissors")]
-        [Description("Игра - камень, ножницы, бумага")]
-        [RequireRoles(RoleCheckMode.All)]
-        public async Task RockPaperScissors(CommandContext ctx, string item)
-        {
-            var joinEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Камень, ножницы, бумага",
-                Description = "",
-                Color = DiscordColor.Gold
-            };
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);
-        }
     }
 }

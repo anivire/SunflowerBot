@@ -15,11 +15,12 @@ namespace SunflowerBot.Commands
     {
         [Command("sunny")]
         [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        //[RequireCategories(ChannelCheckMode.Any, "Sunflower")]
-        [RequireRoles(RoleCheckMode.All)]
+        [RequireRoles(RoleCheckMode.None)]
         public async Task Sunny(CommandContext ctx)
         {
-            var role = ctx.Guild.GetRole(720276705071333506);
+            var role = ctx.Guild.GetRole(724675912204812335);
+            var interactivity = ctx.Client.GetInteractivity();
+            var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
 
             var joinEmbed = new DiscordEmbedBuilder
             {
@@ -27,14 +28,10 @@ namespace SunflowerBot.Commands
                 Description = $":sunflower: Выбери эмодзи для получения роли.\n\nДанная роль позволяет разрешать упоминать вас ({role.Mention}), во время различных событий, для получения солнышек и других наград.\n\nПосле выбора эмодзи сообщение удалится и вы получите роль. Чтобы отписаться от рассылки наберите команду вновь и отреагируюте эмодзи.",
                 Color = DiscordColor.Gold,
             };
-            
+
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
 
-            var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
-
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);   
-
-            var interactivity = ctx.Client.GetInteractivity();
 
             var reactionResult = await interactivity.WaitForReactionAsync(
                 x => x.Message == joinMessage && 
@@ -45,31 +42,53 @@ namespace SunflowerBot.Commands
             {
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
             }
-
-            await joinMessage.DeleteAsync().ConfigureAwait(false);
         }    
-        /*
-        [Command("giveaway")]
+
+        [Command("give")]
+        [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему слово `.confirm`")]
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Giveaway(CommandContext ctx, TimeSpan duration, int sunCount)
+        public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount)
         {
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
 
             var giveawayEmbed = new DiscordEmbedBuilder
             {
-                Title = "Раздача солнышек",
-                Description = $"В случае вашей победы Вы получите **{sunCount}** солнышек!",
+                Title = "Получение солнышек",
+                Description = $"Напишите первым `.confirm` и получите {sunCount} :sunny: солнышек!",
                 Color = DiscordColor.Gold
             };
-            giveawayEmbed.WithFooter($"Оставшееся время - {duration}", null);
 
             var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
-        */
+
+            var message = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
+
+            while (true)
+            {
+                if (message.Result.Content == ".confirm")
+                {
+                    var user = message.Result.Author;
+
+                    var giveawayEndEmbed = new DiscordEmbedBuilder
+                    {
+                        Description = $"{user.Mention} успевает первым забрать солнышки!",
+                        Color = DiscordColor.Gold,
+                    };
+
+                    var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);  
+
+                    break;
+                }
+                else if (message.Result.Content != ".confirm")
+                {
+                    message = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
+                }
+            }
+        }
 
         [Command("info")]
         [Description("Информация и ссылки")]
-        [RequireRoles(RoleCheckMode.All)]
+        [RequireRoles(RoleCheckMode.None)]
         public async Task Info(CommandContext ctx)
         {
             var infoEmbed = new DiscordEmbedBuilder
@@ -86,7 +105,7 @@ namespace SunflowerBot.Commands
         
         [Command("patreon")]
         [Description("Платный контент")]
-        [RequireRoles(RoleCheckMode.All)]
+        [RequireRoles(RoleCheckMode.None)]
         public async Task Patreon(CommandContext ctx)
         {
             var patreonEmbed = new DiscordEmbedBuilder
