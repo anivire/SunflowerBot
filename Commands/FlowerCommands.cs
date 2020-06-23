@@ -45,7 +45,7 @@ namespace SunflowerBot.Commands
         }    
 
         [Command("give")]
-        [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему слово `.confirm`")]
+        [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему `.confirm`")]
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
         public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount)
         {

@@ -41,7 +41,7 @@ namespace SunflowerBot.Commands
 
         [Command("roll")]
         [Description("Получение случайного числа")]
-        [RequireRoles(RoleCheckMode.All)]
+        [RequireRoles(RoleCheckMode.None)]
         public async Task Roll(CommandContext ctx, [Description("Минимальное число")]int min, [Description("Максимальное число")]int max)
         {
             var rnd = new Random();
