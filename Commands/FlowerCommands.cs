@@ -141,6 +141,7 @@ namespace SunflowerBot.Commands
         public async Task Thief(CommandContext ctx, DiscordMember user)
         {
             Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .thief пользователем {ctx.User.Username}");
+
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
 
@@ -183,7 +184,6 @@ namespace SunflowerBot.Commands
 
             if (user == ctx.User)
             {
-                thiefEmbed.WithDescription("Ты чево наделал...");
                 thiefEmbed.WithImageUrl("https://answers.ea.com/ea/attachments/ea/battlefield-v-game-information-ru/1635/1/1785C7EE-5715-48CA-A2FC-16479F84D644.jpeg");
             }
             else
@@ -194,6 +194,39 @@ namespace SunflowerBot.Commands
 
             var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {thiefMessage.Id}");
+        }
+
+        [Command("suggest")]
+        [Description("Голосование за тему арта месяца")]
+        [Hidden]
+        [RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
+        public async Task Suggest(CommandContext ctx, params string[] content)
+        {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .suggest пользователем {ctx.User.Username}");
+
+            var suggestEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold,
+            };
+
+            if (string.Join(" ", content) == string.Empty)
+            {
+                suggestEmbed.WithDescription("Вы не указали тему предложения");
+
+                var joinMessage = await ctx.Channel.SendMessageAsync(embed: suggestEmbed).ConfigureAwait(false);
+                Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
+            }
+            else
+            {
+                suggestEmbed.WithTitle("Предложение темы для арта месяца");
+                suggestEmbed.WithDescription($"{ctx.User.Mention}: {string.Join(" ", content)}");
+
+                var joinMessage = await ctx.Channel.SendMessageAsync(embed: suggestEmbed).ConfigureAwait(false);
+                Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
+
+                await joinMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":upVote:")).ConfigureAwait(false);
+                await joinMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":downVote:")).ConfigureAwait(false);
+            }
         }
     }
 }
