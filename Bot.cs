@@ -32,8 +32,8 @@ namespace SunflowerBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                LogLevel = LogLevel.Debug,
-                UseInternalLogHandler = true
+                LogLevel = LogLevel.Info,
+                UseInternalLogHandler = true,
             };
 
             Client = new DiscordClient(config);
@@ -47,12 +47,11 @@ namespace SunflowerBot
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                // Чтение префикса команд из Config.json
                 StringPrefixes = new string[] {configJson.Prefix}, 
-                EnableDms = false,
+                EnableDms = true,
                 EnableMentionPrefix = true,
-                // Отправка плашки с help в личку пользователя
-                DmHelp = false 
+                DmHelp = false,
+                EnableDefaultHelp = false,
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);

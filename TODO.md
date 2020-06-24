@@ -23,4 +23,5 @@
 
 * Удаление сообщений .del <count>
 * Случайное число в диапазоне .roll <min> <max>
-* Команда .give <sunflowers_count>
+* Выдача солнышек .give <sunflowers_count>
+* Ограбление пользователя .thief <@user>

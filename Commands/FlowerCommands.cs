@@ -1,5 +1,6 @@
 using SunflowerBot.Attributes;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Commands​Next.Converters;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -18,8 +19,11 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.None)]
         public async Task Sunny(CommandContext ctx)
         {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .sunny пользователем {ctx.User.Username}");
             var role = ctx.Guild.GetRole(724675912204812335);
+
             var interactivity = ctx.Client.GetInteractivity();
+
             var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
 
             var joinEmbed = new DiscordEmbedBuilder
@@ -29,7 +33,8 @@ namespace SunflowerBot.Commands
                 Color = DiscordColor.Gold,
             };
 
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);   
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
 
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);   
 
@@ -38,10 +43,13 @@ namespace SunflowerBot.Commands
                 x.User == ctx.User &&
                 (x.Emoji == accept)).ConfigureAwait(false);
 
-            if (reactionResult.Result.Emoji == accept) 
+            if (reactionResult.Result.Emoji == accept)
             {
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
-            }
+                Console.WriteLine($"[{DateTime.Now}] [Role Log] Добавление роли {role.Id} пользователю {ctx.User.Username}");
+
+                // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);
+            }           
         }    
 
         [Command("give")]
@@ -49,6 +57,7 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
         public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount)
         {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .give пользователем {ctx.User.Username}");
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
 
@@ -60,6 +69,7 @@ namespace SunflowerBot.Commands
             };
 
             var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {pollMessage.Id}");
 
             var message = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
 
@@ -75,7 +85,8 @@ namespace SunflowerBot.Commands
                         Color = DiscordColor.Gold,
                     };
 
-                    var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);  
+                    var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);
+                    Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
 
                     break;
                 }
@@ -91,6 +102,7 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.None)]
         public async Task Info(CommandContext ctx)
         {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .info пользователем {ctx.User.Username}");
             var infoEmbed = new DiscordEmbedBuilder
             {
                 Title = "Спасибо за то, что находитесь здесь!",
@@ -99,7 +111,8 @@ namespace SunflowerBot.Commands
             };
             infoEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
 
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);   
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
         }  
 
         
@@ -108,6 +121,7 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.None)]
         public async Task Patreon(CommandContext ctx)
         {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .patreon пользователем {ctx.User.Username}");
             var patreonEmbed = new DiscordEmbedBuilder
             {
                 Title = "Уникальный контент для платных подписчиков!",
@@ -117,7 +131,69 @@ namespace SunflowerBot.Commands
             patreonEmbed.WithThumbnail("https://cahoicatam.com/images/patreon-logo-png-white-1.png", 1000, 500);
             patreonEmbed.WithFooter("Все преимущества от тиров Patreon'а даёт также платная подписка на Twitch");
 
-            var joinMessage = await ctx.Channel.SendMessageAsync(embed: patreonEmbed).ConfigureAwait(false);   
+            var joinMessage = await ctx.Channel.SendMessageAsync(embed: patreonEmbed).ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
         }   
+
+        [Command("thief")]
+        [Description("Создаёт эвент для ограбления пользователя")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Thief(CommandContext ctx, DiscordMember user)
+        {
+            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .thief пользователем {ctx.User.Username}");
+            Random rnd = new Random();
+            var interactivity = ctx.Client.GetInteractivity();
+
+            var thiefEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold
+            };
+
+            var statusBar = string.Empty;
+
+            var small = DiscordEmoji.FromName(ctx.Client, ":small:");
+            var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
+            var full = DiscordEmoji.FromName(ctx.Client, ":full:");
+            var fullRight = DiscordEmoji.FromName(ctx.Client, ":fullRight:");
+            var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
+            var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
+
+            var randomPercent = rnd.Next(1, 100);
+
+            if (randomPercent <= 15)
+            {
+                 statusBar = small + empty + empty + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 30)
+            {
+                statusBar = fullLeft + fullRight + empty + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 50)
+            {
+                statusBar = fullLeft + full + fullRight + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 90)
+            {
+                statusBar = fullLeft + full + full + fullRight + empty + emptyRight;
+            }
+            else if (randomPercent > 90)
+            {
+                statusBar = fullLeft + full + full + full + fullRight + emptyRight;
+            }
+
+            if (user == ctx.User)
+            {
+                thiefEmbed.WithDescription("Ты чево наделал...");
+                thiefEmbed.WithImageUrl("https://answers.ea.com/ea/attachments/ea/battlefield-v-game-information-ru/1635/1/1785C7EE-5715-48CA-A2FC-16479F84D644.jpeg");
+            }
+            else
+            {
+                thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
+                thiefEmbed.WithDescription($"Его шанс на успех:\t{statusBar} {randomPercent}%");
+            }
+
+            var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {thiefMessage.Id}");
+        }
     }
 }
