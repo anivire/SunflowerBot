@@ -56,8 +56,9 @@ namespace SunflowerBot
 
             Commands = Client.UseCommandsNext(commandsConfig);
 
-            Commands.RegisterCommands<FlowerCommands>();
+            Commands.RegisterCommands<SunflowerCommands>();
             Commands.RegisterCommands<UtilCommands>();
+            Commands.RegisterCommands<DataCommands>();
 
             await Client.ConnectAsync();
 
