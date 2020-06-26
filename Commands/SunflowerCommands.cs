@@ -56,18 +56,26 @@ namespace SunflowerBot.Commands
         [Command("give")]
         [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему `.confirm`")]
         [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount)
+        public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount, params string[] content)
         {
             Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .give пользователем {ctx.User.Username}");
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
 
             var giveawayEmbed = new DiscordEmbedBuilder
+                {
+                    Title = "Получение солнышек",
+                     Color = DiscordColor.Gold,
+                };
+
+            if (string.Join(" ", content) == string.Empty)
             {
-                Title = "Получение солнышек",
-                Description = $"Напишите первым `.confirm` и получите {sunCount} :sunny: солнышек!",
-                Color = DiscordColor.Gold
-            };
+                giveawayEmbed.WithDescription($"Напишите первым `.confirm` и получите {sunCount} :sunny: солнышек!");
+            }
+            else
+            {
+                giveawayEmbed.WithDescription($"Напишите первым `.confirm` и получите {sunCount} :sunny: солнышек!\n\n{string.Join(" ", content)}");
+            }
 
             var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {pollMessage.Id}");

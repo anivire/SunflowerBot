@@ -40,6 +40,8 @@ namespace SunflowerBot.Commands
 
                 var user = JsonValue.Parse(profile)[tempUser].AsJsonArray;
 
+                
+
                 foreach (var i in user)
                 {
                     Console.WriteLine(i.ToString());
@@ -51,6 +53,29 @@ namespace SunflowerBot.Commands
             }
 
             await ctx.Channel.SendMessageAsync("База данных была перезагружена.").ConfigureAwait(false);
+        }
+
+        [Command("find")]
+        [Hidden]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Find(CommandContext ctx, DiscordMember user)
+        {
+            var path = Environment.CurrentDirectory + "\\usersData.json";
+
+            var db = File.ReadAllText(path);
+            System.Console.WriteLine(db);
+
+            var profileInfo = JsonValue.Parse(db)[user.Username.ToString()].AsJsonArray;
+            System.Console.WriteLine(profileInfo);
+
+            var userInfo = string.Empty;
+            foreach (var item in profileInfo)
+            {
+                userInfo = userInfo + profileInfo[item];
+            }
+            System.Console.WriteLine(userInfo);
+
+            await ctx.Channel.SendMessageAsync($"Информация о пользователе {user.Mention}: {userInfo}").ConfigureAwait(false);
         }
     }
 }
