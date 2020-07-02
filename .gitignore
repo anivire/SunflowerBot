@@ -1,6 +1,6 @@
 /.vscode
 /bin
-/Config.json
+Config.json
 /obj
 /.txt
-/usersData.json
+/Data/usersData.json

@@ -1,5 +1,6 @@
 using SunflowerBot.Attributes;
 using LightJson;
+using LightJson.Serialization;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Commands​Next.Converters;
@@ -16,43 +17,45 @@ namespace SunflowerBot.Commands
 {
     public class DataCommands : BaseCommandModule
     {
-        [Command("reload")]
+        [Command("restart")]
         [Hidden]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Reload(CommandContext ctx)
+        public async Task Restart(CommandContext ctx)
         {
+            var getusersEmbed = new DiscordEmbedBuilder
+            {
+                Description = "Все новые пользователи были принудительно добавлены в `usersData.json`.",
+                Color = DiscordColor.Gold,
+            };
+
             var users = ctx.Guild.Members;
 
             var sunCount = 0;
+            var file = File.CreateText(Environment.CurrentDirectory + "\\Data\\" + "\\usersData.json");
+            
+            var usersData = new JsonObject();
+            var writer = new JsonWriter(file, true);
 
             foreach (var item in users)
             {
                 var tempUser = item.Value.Username;
                 var tempId = item.Key;
 
-                var profile = new JsonObject()
-	                .Add(tempUser, new JsonArray()
-                        .Add(tempUser)
-		                .Add(tempId.ToString())
-		                .Add(sunCount)
-	                )
-	                .ToString(true);
-
-                var user = JsonValue.Parse(profile)[tempUser].AsJsonArray;
-
-                
-
-                foreach (var i in user)
-                {
-                    Console.WriteLine(i.ToString());
-                }
-
-                var path = Environment.CurrentDirectory + "\\usersData.json";
-
-                File.AppendAllText(path, profile + Environment.NewLine);
+                usersData.Add(tempUser, new JsonArray()
+                    .Add(tempId.ToString())
+                    .Add(sunCount)
+                .ToString(true));
             }
 
-            await ctx.Channel.SendMessageAsync("База данных была перезагружена.").ConfigureAwait(false);
+            foreach (var item in usersData)
+            {
+                System.Console.WriteLine(item + "\n");
+            }
+
+            writer.Write(usersData);
+            file.Close();
+
+            await ctx.Channel.SendMessageAsync(embed: getusersEmbed).ConfigureAwait(false);
         }
 
         [Command("find")]
@@ -60,22 +63,43 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Find(CommandContext ctx, DiscordMember user)
         {
-            var path = Environment.CurrentDirectory + "\\usersData.json";
+            //var profileInfo = JsonValue.Parse(users)[user.Username].AsJsonArray;
+            //System.Console.WriteLine(profileInfo);
 
-            var db = File.ReadAllText(path);
-            System.Console.WriteLine(db);
+            var reader = JsonReader.Parse(File.ReadAllText(Environment.CurrentDirectory + "\\Data\\" + "\\usersData.json"));
 
-            var profileInfo = JsonValue.Parse(db)[user.Username.ToString()].AsJsonArray;
-            System.Console.WriteLine(profileInfo);
+            var cached = new Dictionary<string, string>();
 
-            var userInfo = string.Empty;
-            foreach (var item in profileInfo)
+            var users =  new JsonObject()
+	            .Add("menu", new JsonArray()
+		        .Add("home")
+		        .Add("projects")
+		        .Add("about")
+	            )
+	            .ToString(true);
+
+            var menu = JsonValue.Parse(reader)["menu"].AsJsonArray;
+            System.Console.WriteLine(menu);
+
+            /*foreach (var item in users)
             {
                 userInfo = userInfo + profileInfo[item];
-            }
-            System.Console.WriteLine(userInfo);
+            }*/
+            System.Console.WriteLine(reader.ToString());
 
-            await ctx.Channel.SendMessageAsync($"Информация о пользователе {user.Mention}: {userInfo}").ConfigureAwait(false);
+            //await ctx.Channel.SendMessageAsync($"Информация о пользователе {user.Mention}: {userInfo}").ConfigureAwait(false);
+        }
+
+        [Command("load")]
+        [Hidden]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Load(CommandContext ctx, DiscordMember user)
+        {
+            //var path = Environment.CurrentDirectory + "\\usersData.json";
+
+            var path = File.CreateText(Environment.CurrentDirectory + "\\Data\\" + "\\usersData.json");
+            System.Console.WriteLine(path);
+
         }
     }
 }
