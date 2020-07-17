@@ -55,7 +55,7 @@ namespace SunflowerBot.Commands
 
         [Command("give")]
         [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему `.confirm`")]
-        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
+        //[RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
         public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount, params string[] content)
         {
             Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .give пользователем {ctx.User.Username}");

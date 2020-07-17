@@ -14,7 +14,7 @@ namespace SunflowerBot.Commands
     {
         [Command("del")]
         [Description("Удаление сообщений")]
-        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor", "mod")]
         public async Task Del(CommandContext ctx, [Description("Количество сообщений для удаления")]int numberMessages)
         {
             var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
@@ -126,6 +126,7 @@ namespace SunflowerBot.Commands
             var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
             var full = DiscordEmoji.FromName(ctx.Client, ":full:");
             var fullRight = DiscordEmoji.FromName(ctx.Client, ":fullRight:");
+            var fullRightEnd = DiscordEmoji.FromName(ctx.Client, ":fullRightEnd:");
             var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
             var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
 
@@ -151,6 +152,10 @@ namespace SunflowerBot.Commands
             {
                 statusBar = fullLeft + full + full + full + fullRight + emptyRight;
             }
+            else if (randomPercent == 100)
+            {
+                statusBar = fullLeft + full + full + full + full + fullRightEnd;
+            }
 
             if (user == ctx.User)
             {
@@ -159,7 +164,7 @@ namespace SunflowerBot.Commands
             else
             {
                 thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
-                thiefEmbed.WithDescription($"Его шанс на успех:\t{statusBar} {randomPercent}%");
+                thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
             }
 
             var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
@@ -169,7 +174,7 @@ namespace SunflowerBot.Commands
         [Command("suggest")]
         [Description("Голосование за тему арта месяца")]
         [Hidden]
-        [RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
+        //[RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
         public async Task Suggest(CommandContext ctx, params string[] content)
         {
             Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .suggest пользователем {ctx.User.Username}");
