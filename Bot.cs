@@ -32,7 +32,7 @@ namespace SunflowerBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                LogLevel = LogLevel.Info,
+                LogLevel = LogLevel.Debug,
                 UseInternalLogHandler = true,
             };
 
@@ -51,7 +51,7 @@ namespace SunflowerBot
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 DmHelp = false,
-                EnableDefaultHelp = false,
+                EnableDefaultHelp = true,
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
