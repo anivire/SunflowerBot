@@ -18,17 +18,17 @@ namespace SunflowerBot.Commands
 {
     public class DataCommands : BaseCommandModule
     {
-        string path = Environment.CurrentDirectory + "\\Data\\";
+        string path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\";
 
         [Command("createdata")]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Createdata(CommandContext ctx)
         {
-            path = Environment.CurrentDirectory + "\\Data\\" + $"\\{ctx.Guild.Name}.json";
+            path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\" + $"{ctx.Guild.Name}.json";
 
             var getusersEmbed = new DiscordEmbedBuilder
             {
-                Description = $"Пользователи были принудительно добавлены в `UsersData.json`.",
+                Description = $"Пользователи были принудительно добавлены в `{ctx.Guild.Name}.json`.",
                 Color = DiscordColor.Gold,
             };
 
@@ -71,24 +71,28 @@ namespace SunflowerBot.Commands
 
         [Command("load")]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Load(CommandContext ctx)
+        public async Task Load(CommandContext ctx, params string[] guild)
         {
-            DataSet dataSet = JsonConvert.DeserializeObject<DataSet>(File.ReadAllText(path));
+            var users = String.Empty;
+            DataSet dataSet = JsonConvert.DeserializeObject<DataSet>(File.ReadAllText(path + $"{ctx.Guild.Name}.json"));
+            System.Console.WriteLine(path + $"{ctx.Guild.Name}.json");
 
             DataTable dataTable = dataSet.Tables["Table1"];
-            Console.WriteLine(dataTable.Rows.Count);
-
-            var loadDataEmbed = new DiscordEmbedBuilder
-            {
-                Description = "Загрузка пользователей из `UsersData.json`.",
-                Color = DiscordColor.Gold,
-            };
 
             foreach (DataRow row in dataTable.Rows)
             {
-                Console.WriteLine(row["username"] + " " + row["discordId"] + " " + row["sunCount"]);
-                loadDataEmbed.AddField(row["username"].ToString(), $"ID: {row["discordId"]},\nSunCount: {row["sunCount"]}", false);
+                users = users + string.Join(" ", row["username"] + " ");
             }
+
+            var loadDataEmbed = new DiscordEmbedBuilder
+            {
+                Description = $"Загрузка пользователей из `{ctx.Guild.Name}.json`.\n\n"
+                    + $"Количество пользователей на сервере - `{dataTable.Rows.Count}\n`"
+                    + $"{users}",
+                Color = DiscordColor.Gold,
+            };
+
+            
 
             await ctx.Channel.SendMessageAsync(embed: loadDataEmbed).ConfigureAwait(false);
         }
