@@ -1,6 +1,4 @@
-﻿using DSharpPlus;
-
-namespace SunflowerBot
+﻿namespace SunflowerBot
 {
     class Program
     {

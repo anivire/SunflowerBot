@@ -38,7 +38,7 @@ namespace SunflowerBot
 
             Client = new DiscordClient(config);
 
-            Client.Ready += OnClientReady;
+            Client.Ready += Client_Ready;
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
@@ -60,13 +60,17 @@ namespace SunflowerBot
             Commands.RegisterCommands<UtilCommands>();
             Commands.RegisterCommands<DataCommands>();
 
+            Commands.SetHelpFormatter<DefaultHelpFormatter>();
+
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
         }
 
-        private Task OnClientReady(ReadyEventArgs e)
+        private Task Client_Ready(ReadyEventArgs e)
         {
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Client is ready to process events.", DateTime.Now);
+
             return Task.CompletedTask;
         }
     }
