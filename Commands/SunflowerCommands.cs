@@ -20,11 +20,8 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.None)]
         public async Task Sunny(CommandContext ctx)
         {
-            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .sunny пользователем {ctx.User.Username}");
             var role = ctx.Guild.GetRole(720276705071333506);
-
             var interactivity = ctx.Client.GetInteractivity();
-
             var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
 
             var joinEmbed = new DiscordEmbedBuilder
@@ -35,7 +32,6 @@ namespace SunflowerBot.Commands
             };
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);
-            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
 
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);   
 
@@ -47,7 +43,6 @@ namespace SunflowerBot.Commands
             if (reactionResult.Result.Emoji == accept)
             {
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
-                Console.WriteLine($"[{DateTime.Now}] [Role Log] Добавление роли {role.Id} пользователю {ctx.User.Username}");
 
                 // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);*/
             }  
@@ -55,10 +50,9 @@ namespace SunflowerBot.Commands
 
         [Command("give")]
         [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему `.confirm`")]
-        //[RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount, params string[] content)
+        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
+        public async Task Give(CommandContext ctx, [Description("Количество солнышек")]int sunCount, [Description("*Необязательно; сообщение для вывода")]params string[] content)
         {
-            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .give пользователем {ctx.User.Username}");
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
 
@@ -78,7 +72,6 @@ namespace SunflowerBot.Commands
             }
 
             var pollMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEmbed).ConfigureAwait(false);
-            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {pollMessage.Id}");
 
             var message = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel).ConfigureAwait(false);
 
@@ -95,7 +88,6 @@ namespace SunflowerBot.Commands
                     };
 
                     var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);
-                    Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
 
                     break;
                 }

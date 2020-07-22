@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using System.Security.Cryptography;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,15 @@ namespace SunflowerBot.Commands
     {
         [Command("del")]
         [Description("Удаление сообщений")]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor", "mod")]
-        public async Task Del(CommandContext ctx, [Description("Количество сообщений для удаления")]int numberMessages)
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Del(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
         {
             var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
             await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
 
             var delEmbed = new DiscordEmbedBuilder
             {
-                 Color = DiscordColor.Gold
+                Color = DiscordColor.Gold
             };
 
             delEmbed.WithDescription($"Удалено {numberMessages} сообщений");
@@ -30,10 +31,10 @@ namespace SunflowerBot.Commands
             var clearMessage = await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
         }
 
-        [Command("deln")]
-        [Description("Удаление сообщений без вывода форматированного текста")]
-        [RequireRoles(RoleCheckMode.All, "Sun Sponsor")]
-        public async Task Deln(CommandContext ctx, [Description("Количество сообщений для удаления")]int numberMessages)
+        [Command("dell")]
+        [Description("Удаление сообщений без вывода embed")]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Deln(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
         {
             var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
             await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
@@ -42,22 +43,22 @@ namespace SunflowerBot.Commands
         [Command("roll")]
         [Description("Получение случайного числа")]
         [RequireRoles(RoleCheckMode.None)]
-        public async Task Roll(CommandContext ctx, [Description("Минимальное число")]int min, [Description("Максимальное число")]int max)
+        public async Task Roll(CommandContext ctx, [Description("Минимальное число")] int min, [Description("Максимальное число")] int max)
         {
             var rnd = new Random();
-            
+
             var rollEmbed = new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Gold
-                };
-            
+            {
+                Color = DiscordColor.Gold
+            };
+
             if (max >= 1 && max > min)
             {
                 rollEmbed.WithDescription($"🎲 Случайное число: {rnd.Next(min, max + 1)}");
 
                 var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
             }
-            else if (max <= 1)   
+            else if (max <= 1)
             {
                 rollEmbed.WithDescription("Некорректно заданное число");
 
@@ -65,7 +66,7 @@ namespace SunflowerBot.Commands
             }
         }
 
-        [Command("info")]
+        [Command("inf")]
         [Description("Информация и ссылки")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Info(CommandContext ctx)
@@ -74,17 +75,17 @@ namespace SunflowerBot.Commands
             var infoEmbed = new DiscordEmbedBuilder
             {
                 Title = "Спасибо за то, что находитесь здесь!",
-                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: https://discord.gg/6YpDYKu",
+                Description = $"Просто ссылки на простые страницы, ок:\n\nTwitter: https://twitter.com/aniv1re\nArtStation: https://artstation.com/aniv1re\nTwitch: https://twitch.tv/anivire_\n\nПерманентная ссылка-приглашение на сервер:\nDiscord: `null`",
                 Color = DiscordColor.Gold,
             };
             infoEmbed.WithThumbnail("https://i.imgur.com/GFBXBoz.jpg", 1000, 500);
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
-        }  
+        }
 
-        
-        [Command("patreon")]
+
+        [Command("pat")]
         [Description("Платный контент")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Patreon(CommandContext ctx)
@@ -101,27 +102,16 @@ namespace SunflowerBot.Commands
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: patreonEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
-        }   
+        }
 
         [Command("rob")]
         [Description("Создаёт эвент для ограбления пользователя")]
         [RequireRoles(RoleCheckMode.None)]
-        public async Task Rob(CommandContext ctx, DiscordMember user)
+        public async Task Rob(CommandContext ctx, [Description("Пользователь, для попытки ограбления (`@username`)")] DiscordMember user)
         {
-            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .thief пользователем {ctx.User.Username}");
-
             Random rnd = new Random();
             var interactivity = ctx.Client.GetInteractivity();
-            
-            DiscordMember sunflowerGod = await ctx.Channel.Guild.GetMemberAsync(673527202029109258);
-
-            var thiefEmbed = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Gold
-            };
-
             var statusBar = string.Empty;
-
             var small = DiscordEmoji.FromName(ctx.Client, ":small:");
             var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
             var full = DiscordEmoji.FromName(ctx.Client, ":full:");
@@ -129,12 +119,16 @@ namespace SunflowerBot.Commands
             var fullRightEnd = DiscordEmoji.FromName(ctx.Client, ":fullRightEnd:");
             var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
             var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
-
             var randomPercent = rnd.Next(1, 100);
+
+            var thiefEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold
+            };
 
             if (randomPercent <= 15)
             {
-                 statusBar = small + empty + empty + empty + empty + emptyRight;
+                statusBar = small + empty + empty + empty + empty + emptyRight;
             }
             else if (randomPercent <= 30)
             {
@@ -168,17 +162,13 @@ namespace SunflowerBot.Commands
             }
 
             var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
-            Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {thiefMessage.Id}");
         }
 
-        [Command("suggest")]
-        [Description("Голосование за тему арта месяца")]
-        [Hidden]
-        //[RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
-        public async Task Suggest(CommandContext ctx, params string[] content)
+        [Command("sugg")]
+        [Description("Голосование за тему арта месяца для платных подписчиков")]
+        [RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
+        public async Task Suggest(CommandContext ctx, [Description("Предложенная тема")] params string[] content)
         {
-            Console.WriteLine($"[{DateTime.Now}] [Command Log] Использована команда .suggest пользователем {ctx.User.Username}");
-
             var suggestEmbed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Gold,
@@ -189,7 +179,6 @@ namespace SunflowerBot.Commands
                 suggestEmbed.WithDescription("Вы не указали тему предложения");
 
                 var joinMessage = await ctx.Channel.SendMessageAsync(embed: suggestEmbed).ConfigureAwait(false);
-                Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
             }
             else
             {
@@ -197,11 +186,57 @@ namespace SunflowerBot.Commands
                 suggestEmbed.WithDescription($"{ctx.User.Mention}: {string.Join(" ", content)}");
 
                 var joinMessage = await ctx.Channel.SendMessageAsync(embed: suggestEmbed).ConfigureAwait(false);
-                Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат {joinMessage.Id}");
 
                 await joinMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":upVote:")).ConfigureAwait(false);
                 await joinMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":downVote:")).ConfigureAwait(false);
             }
+        }
+
+        [Command("code")]
+        [Description("Waits for a response containing a generated code.")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task WaitForCode(CommandContext ctx)
+        {
+            var interactivity = ctx.Client.GetInteractivity();
+
+            var codeEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold,
+            };
+
+            var codebytes = new byte[8];
+            using (var rnd = RandomNumberGenerator.Create())
+                rnd.GetBytes(codebytes);
+
+            var code = BitConverter.ToString(codebytes).ToLower().Replace("-", "");
+
+            codeEmbed.WithDescription($"Первый, кто напишет код в чат, получит ничего: `{code}`");
+            await ctx.Channel.SendMessageAsync(embed: codeEmbed).ConfigureAwait(false);
+
+            var msg = await interactivity.WaitForMessageAsync(e => e.Content.Contains(code), TimeSpan.FromSeconds(60));
+
+            codeEmbed.WithDescription($"Победитель: {msg.Result.Author.Mention}");
+            await ctx.Channel.SendMessageAsync(embed: codeEmbed).ConfigureAwait(false);
+        }
+
+        [Command("act")]
+        public async Task Activity(CommandContext ctx, params string[] content)
+        {
+            var changedContent = string.Join(" ", content);
+
+            var activity = new DiscordActivity
+            {
+                Name = $"{changedContent}",
+            };
+
+            var activityEmbed = new DiscordEmbedBuilder
+            {
+                Description = $"Статус бота успешно изменён на `{changedContent}`",
+                Color = DiscordColor.Gold,
+            };
+
+            await ctx.Client.UpdateStatusAsync(activity);
+            await ctx.Channel.SendMessageAsync(embed: activityEmbed).ConfigureAwait(false);
         }
     }
 }

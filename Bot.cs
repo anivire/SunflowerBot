@@ -8,13 +8,14 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using DSharpPlus.Entities;
 
 namespace SunflowerBot
 {
     public class Bot
     {
         public DiscordClient Client { get; private set; }
-        public InteractivityExtension Interactivity {get; private set; }
+        public InteractivityExtension Interactivity { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
 
         public async Task RunAsync()
@@ -47,7 +48,7 @@ namespace SunflowerBot
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                StringPrefixes = new string[] {configJson.Prefix}, 
+                StringPrefixes = new string[] { configJson.Prefix },
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 DmHelp = false,
@@ -70,6 +71,12 @@ namespace SunflowerBot
         private Task Client_Ready(ReadyEventArgs e)
         {
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Client is ready to process events.", DateTime.Now);
+
+            var activity = new DiscordActivity
+            {
+                Name = "Plants vs. Zombies",
+            };
+            Client.UpdateStatusAsync(activity, UserStatus.Online, null);
 
             return Task.CompletedTask;
         }

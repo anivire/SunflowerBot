@@ -41,7 +41,7 @@ namespace SunflowerBot.Commands
 
         [Command("load")]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Load(CommandContext ctx, ulong guild)
+        public async Task Load(CommandContext ctx, [Description("ID необходимого сервера")]ulong guild)
         {
             var users = String.Empty;
 
