@@ -14,8 +14,9 @@
 
 # Готово
 
-* Удаление сообщений `.del count`
-* Информационные сообщения `.patreon && .info && .suggest content`
+* Удаление сообщений `.del (.dell) count`
+* Информационные сообщения `.pat && .inf && .suggest content`
 * Случайное число в диапазоне `.roll min max`
-* Выдача солнышек `.give sunflowers_count`
+* Выдача солнышек `.give count`
 * Ограбление пользователя `.rob @user`
+* Изменение статуса бота `.act text`

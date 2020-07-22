@@ -193,7 +193,8 @@ namespace SunflowerBot.Commands
         }
 
         [Command("code")]
-        [Description("Waits for a response containing a generated code.")]
+        [Hidden]
+        [Description("Генерация случайного кода")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task WaitForCode(CommandContext ctx)
         {
@@ -220,7 +221,9 @@ namespace SunflowerBot.Commands
         }
 
         [Command("act")]
-        public async Task Activity(CommandContext ctx, params string[] content)
+        [Description("Изменение статуса бота")]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Activity(CommandContext ctx, [Description("Новый статус")] params string[] content)
         {
             var changedContent = string.Join(" ", content);
 
