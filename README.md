@@ -1,4 +1,4 @@
-# Sunflower Bot
+﻿# Sunflower Bot
 
 Дискорд-бот, основанный на механике игры [Plants Versus Zombies](https://store.steampowered.com/app/3590/Plants_vs_Zombies_GOTY_Edition/), где игроку нужно было собирать солнышки для покупки растений.
 

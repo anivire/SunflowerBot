@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DSharpPlus;
@@ -7,7 +7,7 @@ using DSharpPlus.CommandsNext.Converters;
 using DSharpPlus.CommandsNext.Entities;
 using DSharpPlus.Entities;
 
-namespace SunflowerBot
+namespace Sunflower.Bot
 {
     public class DefaultHelpFormatter : BaseHelpFormatter
     {

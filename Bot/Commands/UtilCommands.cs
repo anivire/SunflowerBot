@@ -1,4 +1,4 @@
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SunflowerBot.Commands
+namespace Sunflower.Bot.Commands
 {
     public class UtilCommands : BaseCommandModule
     {

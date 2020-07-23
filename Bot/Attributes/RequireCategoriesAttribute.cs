@@ -1,4 +1,4 @@
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SunflowerBot.Attributes
+namespace Sunflower.Bot.Attributes
 {
     public enum ChannelCheckMode
     {
@@ -29,7 +29,7 @@ namespace SunflowerBot.Attributes
 
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
-            if(ctx.Guild == null || ctx.Member == null)
+            if (ctx.Guild == null || ctx.Member == null)
             {
                 return Task.FromResult(false);
             }
@@ -43,7 +43,7 @@ namespace SunflowerBot.Attributes
                 ChannelCheckMode.None => Task.FromResult(!contains),
 
                 _ => Task.FromResult(false),
-           };
+            };
         }
     }
 }

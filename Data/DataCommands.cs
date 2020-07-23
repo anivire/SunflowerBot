@@ -1,5 +1,5 @@
-using SunflowerBot.Attributes;
-using SunflowerBot.Data;
+﻿using Sunflower.Bot.Attributes;
+using Sunflower.Bot.Data;
 using Newtonsoft.Json;
 using System.Text;
 using DSharpPlus.CommandsNext;
@@ -15,7 +15,7 @@ using System.IO;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace SunflowerBot.Commands
+namespace Sunflower.Bot.Commands
 {
     public class DataCommands : BaseCommandModule
     {
@@ -43,23 +43,15 @@ namespace SunflowerBot.Commands
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Load(CommandContext ctx)
         {
-            var users = String.Empty;
-
-            DataSet dataSet = JsonConvert.DeserializeObject<DataSet>(File.ReadAllText(path + $"{ctx.Guild.Id}.json"));
-            DataTable dataTable = dataSet.Tables["Table1"];
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                users = users + string.Join(" ", row["username"]);
-            }
+            var dataTable = DataLoad.LoadDB(path, ctx.Guild.Id);
 
             var loadDataEmbed = new DiscordEmbedBuilder
             {
-                Description = $"Загрузка пользователей из `{ctx.Guild.Id}.json`.\n\n"
-                    + $"Количество пользователей на сервере - `{dataSet}\n`"
-                    + $"{users}",
+                Description = $"Загрузка пользователей из `{ctx.Guild.Id}.json`.",
                 Color = DiscordColor.Gold,
             };
+
+            loadDataEmbed.AddField("Пользователи:", string.Join(" ", ctx.Guild.Members.Select(x => $"{x.Value.Mention}")));
 
             await ctx.Channel.SendMessageAsync(embed: loadDataEmbed).ConfigureAwait(false);
         }
@@ -83,14 +75,15 @@ namespace SunflowerBot.Commands
                     var roles = ctx.Member.Roles;
 
                     userinfoEmbed.WithAuthor($"Пользователь {ctx.Member.Username}");
-                    userinfoEmbed.WithDescription(string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
                     userinfoEmbed.AddField("Количество солнц:", $":sunny: {row["sunCount"]}", true);
-                    userinfoEmbed.AddField("Первый визит на сервер:", ctx.Member.JoinedAt.DateTime.ToString(), true);
+                    userinfoEmbed.AddField("Присоединился к серверу:", ctx.Member.JoinedAt.DateTime.ToString(), true);
+                    userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
                     userinfoEmbed.WithThumbnail(ctx.Member.AvatarUrl, 500, 500);
 
                     await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                 }
             }
+
         }
     }
 }

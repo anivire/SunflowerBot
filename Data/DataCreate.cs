@@ -1,10 +1,10 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Data;
 using System.IO;
 using DSharpPlus.Entities;
 using System.Collections.Generic;
 
-namespace SunflowerBot.Data
+namespace Sunflower.Bot.Data
 {
     public class DataCreate
     {

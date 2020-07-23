@@ -1,4 +1,4 @@
-﻿namespace SunflowerBot
+﻿namespace Sunflower.Bot
 {
     class Program
     {

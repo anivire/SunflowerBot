@@ -1,4 +1,4 @@
-using SunflowerBot.Attributes;
+﻿using Sunflower.Bot.Attributes;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Commands​Next.Converters;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SunflowerBot.Commands
+namespace Sunflower.Bot.Commands
 {
     public class SunflowerCommands : BaseCommandModule
     {
@@ -33,10 +33,10 @@ namespace SunflowerBot.Commands
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);
 
-            await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);   
+            await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);
 
             var reactionResult = await interactivity.WaitForReactionAsync(
-                x => x.Message == joinMessage && 
+                x => x.Message == joinMessage &&
                 x.User == ctx.User &&
                 (x.Emoji == accept)).ConfigureAwait(false);
 
@@ -45,8 +45,8 @@ namespace SunflowerBot.Commands
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
 
                 // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);*/
-            }  
-        }    
+            }
+        }
 
         [Command("give")]
         [Description("Создаёт эвент для выдачи солнышек пользователю, первому написавшему `.confirm`")]
@@ -57,10 +57,10 @@ namespace SunflowerBot.Commands
             var interactivity = ctx.Client.GetInteractivity();
 
             var giveawayEmbed = new DiscordEmbedBuilder
-                {
-                    Title = "Получение солнышек",
-                     Color = DiscordColor.Gold,
-                };
+            {
+                Title = "Получение солнышек",
+                Color = DiscordColor.Gold,
+            };
 
             if (string.Join(" ", content) == string.Empty)
             {

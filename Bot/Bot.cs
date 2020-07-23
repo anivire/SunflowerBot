@@ -1,16 +1,16 @@
-﻿using SunflowerBot.Commands;
+﻿using Sunflower.Bot.Commands;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using DSharpPlus.Entities;
 
-namespace SunflowerBot
+namespace Sunflower.Bot
 {
     public class Bot
     {
@@ -22,7 +22,7 @@ namespace SunflowerBot
         {
             var json = string.Empty;
 
-            using (var fs = File.OpenRead("config.json"))
+            using (var fs = File.OpenRead(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
@@ -79,6 +79,13 @@ namespace SunflowerBot
             Client.UpdateStatusAsync(activity, UserStatus.Online, null);
 
             return Task.CompletedTask;
+        }
+        public struct ConfigJson
+        {
+            [JsonProperty("token")]
+            public string Token { get; private set; }
+            [JsonProperty("prefix")]
+            public string Prefix { get; private set; }
         }
     }
 }
