@@ -1,4 +1,5 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using Sunflower.Bot;
+using DSharpPlus.CommandsNext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -8,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Sunflower.Bot.Commands
 {
@@ -83,7 +86,6 @@ namespace Sunflower.Bot.Commands
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: infoEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
         }
-
 
         [Command("pat")]
         [Description("Платный контент")]
@@ -240,6 +242,32 @@ namespace Sunflower.Bot.Commands
 
             await ctx.Client.UpdateStatusAsync(activity);
             await ctx.Channel.SendMessageAsync(embed: activityEmbed).ConfigureAwait(false);
+        }
+
+        [Command("botinfo")]
+        [Description("Информация о боте")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Botinfo(CommandContext ctx)
+        {
+            var sunflowerDance = DiscordEmoji.FromName(ctx.Client, ":sunflowerDance:");
+
+            var botInfoEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Информация о боте",
+                Description = $"Дискорд-бот, основанный на игре Plants vs. Zombies, где игроку нужно было собирать солнышки для покупки растений.\n\nЗдесь действует похожая система по которой в случайный промежуток времени бот будет писать сообщение в чат и дарить пользователю определённое количество солнышек, зависящее от различных эвентов. Первый пользователь, кто напишет сообщение в чате получает солнышки.\n\n" +
+                    sunflowerDance + $"**Автор оригинального подсолнуха YoukaiDrawing:\n** VK: https://vk.com/pixel_youkai \n\n" +
+                    $"**Исходный код бота написанного на C# с применением библиотек DSharpPlus:\n** Github: https://github.com/aniv1re/SunflowerBot",
+                Color = DiscordColor.Gold,
+            };
+            botInfoEmbed.WithThumbnail("https://media.discordapp.net/attachments/733938192604201073/735825414924140544/cockflower-dance.gif", 500, 500);
+            botInfoEmbed.AddField("Дата создания:", ctx.Guild.CurrentMember.CreationTimestamp.DateTime.ToShortDateString(), true);
+            botInfoEmbed.AddField("ID бота:", ctx.Guild.CurrentMember.Id.ToString(), true);
+
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\Config.json"));
+            botInfoEmbed.AddField("Версия:", configJson.Version, true);
+            
+
+            await ctx.Channel.SendMessageAsync(embed: botInfoEmbed).ConfigureAwait(false);
         }
     }
 }

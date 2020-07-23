@@ -11,8 +11,4 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00709" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\Guild\" />
-  </ItemGroup>
-
 </Project>
