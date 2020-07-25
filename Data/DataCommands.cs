@@ -22,6 +22,7 @@ namespace Sunflower.Bot.Commands
         string path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\";
 
         [Command("createdata")]
+        [Hidden]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Createdata(CommandContext ctx)
         {
@@ -30,7 +31,7 @@ namespace Sunflower.Bot.Commands
 
             var getusersEmbed = new DiscordEmbedBuilder
             {
-                Description = $"Пользователи были принудительно добавлены в `{ctx.Guild.Id}.json`.",
+                Description = $"Пользователи были добавлены в `{ctx.Guild.Id}.json`.",
                 Color = DiscordColor.Gold,
             };
 
@@ -40,10 +41,11 @@ namespace Sunflower.Bot.Commands
         }
 
         [Command("load")]
+        [Hidden]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Load(CommandContext ctx)
         {
-            var dataTable = DataLoad.LoadDB(path, ctx.Guild.Id);
+            //var dataTable = DataLoad.LoadDB(path, ctx.Guild.Id);
 
             var loadDataEmbed = new DiscordEmbedBuilder
             {
@@ -57,8 +59,9 @@ namespace Sunflower.Bot.Commands
         }
 
         [Command("userinfo")]
+        [Description("Информация о пользователе")]
         [RequireRoles(RoleCheckMode.None)]
-        public async Task Userinfo(CommandContext ctx)
+        public async Task Userinfo(CommandContext ctx, [Description("Пользователь, информацию о котором хотите посмотреть")] DiscordMember user)
         {
             DataSet dataSet = JsonConvert.DeserializeObject<DataSet>(File.ReadAllText(path + $"{ctx.Guild.Id}.json"));
             DataTable dataTable = dataSet.Tables["Table1"];
@@ -68,22 +71,77 @@ namespace Sunflower.Bot.Commands
                 Color = DiscordColor.Gold,
             };
 
-            foreach (DataRow row in dataTable.Rows)
+            /*foreach (DataRow row in dataTable.Rows)
             {
                 if (row["discordId"].ToString() == ctx.Member.Id.ToString())
                 {
                     var roles = ctx.Member.Roles;
 
-                    userinfoEmbed.WithAuthor($"Пользователь {ctx.Member.Username}");
+                    var botCheck = String.Empty;
+                    if (ctx.Member.IsBot)
+                    {
+                        botCheck = " - Bot";
+                    }
+
+                    userinfoEmbed.WithTitle($"Пользователь {ctx.Member.Username}#{ctx.Member.Discriminator}" + botCheck);
                     userinfoEmbed.AddField("Количество солнц:", $":sunny: {row["sunCount"]}", true);
-                    userinfoEmbed.AddField("Присоединился к серверу:", ctx.Member.JoinedAt.DateTime.ToString(), true);
+                    userinfoEmbed.AddField("Текущий ник:", ctx.Member.DisplayName, true);
+                    userinfoEmbed.AddField("Зашёл на сервер:", ctx.Member.JoinedAt.DateTime.ToShortDateString(), true);
                     userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
                     userinfoEmbed.WithThumbnail(ctx.Member.AvatarUrl, 500, 500);
 
                     await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                 }
+            }*/
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                if (row["discordId"].ToString() == user.Id.ToString())
+                {
+                    var roles = user.Roles;
+
+                    var botCheck = String.Empty;
+                    if (user.IsBot)
+                    {
+                        botCheck = " [Bot]";
+                    }
+
+                    userinfoEmbed.WithTitle($"Пользователь {user.Username}#{user.Discriminator}" + botCheck);
+                    userinfoEmbed.AddField("Количество солнц:", $":sunny: {row["sunCount"]}", true);
+                    userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
+                    userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
+                    userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
+                    userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
+
+                    await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
+                }
             }
 
+        }
+
+        [Command("list")]
+        [Hidden]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task List(CommandContext ctx)
+        {
+            DirectoryInfo dir = new DirectoryInfo(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\bin\Debug\netcoreapp3.1\Data\Guild");
+            var guilds = String.Empty;
+            var i = 1;
+
+            foreach (var item in dir.GetFiles())
+            {
+                guilds = guilds + string.Join(" ", $"{i}. `{item.Name}`\n");
+                i++;
+            }
+
+            var loadDataEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold,
+            };
+
+            loadDataEmbed.WithDescription("Доступные сервера:\n\n" + guilds);
+
+            await ctx.Channel.SendMessageAsync(embed: loadDataEmbed).ConfigureAwait(false);
         }
     }
 }

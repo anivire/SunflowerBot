@@ -67,19 +67,19 @@ namespace Sunflower.Bot
 
             await Task.Delay(-1);
         }
-
+        
         private Task Client_Ready(ReadyEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Client is ready to process events.", DateTime.Now);
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Бот успешно загружен.", DateTime.Now);
 
             var activity = new DiscordActivity
             {
-                Name = "Plants vs. Zombies",
+                Name = "Zombies vs Plants",
             };
+
             Client.UpdateStatusAsync(activity, UserStatus.Online, null);
 
             return Task.CompletedTask;
         }
-
     }
 }

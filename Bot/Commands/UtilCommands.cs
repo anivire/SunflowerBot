@@ -1,4 +1,5 @@
 ﻿using Sunflower.Bot;
+using Sunflower.Bot.PaletteGeneration;
 using DSharpPlus.CommandsNext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
+using System.Drawing;
 
 namespace Sunflower.Bot.Commands
 {
@@ -69,7 +71,7 @@ namespace Sunflower.Bot.Commands
             }
         }
 
-        [Command("inf")]
+        /*[Command("inf")]
         [Description("Информация и ссылки")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Info(CommandContext ctx)
@@ -104,7 +106,7 @@ namespace Sunflower.Bot.Commands
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: patreonEmbed).ConfigureAwait(false);
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
-        }
+        }*/
 
         [Command("rob")]
         [Description("Создаёт эвент для ограбления пользователя")]
@@ -265,9 +267,55 @@ namespace Sunflower.Bot.Commands
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\Config.json"));
             botInfoEmbed.AddField("Версия:", configJson.Version, true);
-            
+
 
             await ctx.Channel.SendMessageAsync(embed: botInfoEmbed).ConfigureAwait(false);
+        }
+
+        [Command("palette")]
+        [Description("Создание палитры из случайно сгенерированных цветов")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Palette(CommandContext ctx, [Description("Количество цветов")]int colorNumber)
+        {
+            // max 170
+            string path = @"C:\Users\anivire\source\repos\Sunflower\Sunflower\bin\Debug\netcoreapp3.1\Palettes\";
+
+            var codes = String.Empty;
+            string[] hexArray = new string[colorNumber];
+
+            for (int i = 0; i != colorNumber; i++)
+            {
+                codes += String.Join(" ", $"`#{PaletteGeneration.ColorGen.RandomColor()}` ");
+            }
+
+            PaletteGeneration.ColorGen.CreateImage(path, colorNumber, hexArray);
+
+            var paletteEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Сгенерированные цвета:",
+                Description = $"{codes}",
+                Color = DiscordColor.Gold
+            };
+
+            await ctx.Channel.SendMessageAsync(embed: paletteEmbed).ConfigureAwait(false);
+        }
+
+        [Command("report")]
+        [Description("Ссылка на страницу баг-репортов")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Report(CommandContext ctx)
+        {
+            var reportEmbed = new DiscordEmbedBuilder
+            {
+                Description = "Если вы нашли какие-то проблемы в работе бота или его команд, сообщите пожалуйста о них на странице GitHub",
+                Color = DiscordColor.Gold
+            };
+            reportEmbed.WithTitle("Кликай сюда!");
+            reportEmbed.WithUrl("https://github.com/aniv1re/SunflowerBot/issues/new");
+            reportEmbed.AddField("GitHub:", "https://github.com/aniv1re/SunflowerBot/issues/");
+            reportEmbed.WithThumbnail("https://avatars.mds.yandex.net/get-pdb/2303023/db0da5c7-0b20-4c7c-9014-425eab763af9/s1200?webp=false", 500, 500);
+
+            await ctx.Channel.SendMessageAsync(embed: reportEmbed).ConfigureAwait(false);
         }
     }
 }
