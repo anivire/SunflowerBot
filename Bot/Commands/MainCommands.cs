@@ -1,5 +1,4 @@
 ﻿using Sunflower.Bot;
-using Sunflower.Bot.PaletteGeneration;
 using DSharpPlus.CommandsNext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
@@ -16,35 +15,82 @@ using System.Drawing;
 
 namespace Sunflower.Bot.Commands
 {
-    public class UtilCommands : BaseCommandModule
+    public class MainCommands : BaseCommandModule
     {
-        [Command("del")]
-        [Description("Удаление сообщений")]
+        [Group("util")]
+        [Aliases("u")]
         [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Del(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
+        [Description("Группа команд для работы с сервером и ботом ")]
+        public class UtilCommands : BaseCommandModule
         {
-            var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
-            await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
-
-            var delEmbed = new DiscordEmbedBuilder
+            [Command("del")]
+            [Description("Удаление сообщений")]
+            public async Task Del(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
             {
-                Color = DiscordColor.Gold
-            };
+                var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
+                await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
 
-            delEmbed.WithDescription($"Удалено {numberMessages} сообщений");
+                var delEmbed = new DiscordEmbedBuilder
+                {
+                    Color = DiscordColor.Gold
+                };
 
-            var clearMessage = await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
+                delEmbed.WithDescription($"Удалено {numberMessages} сообщений");
+
+                var clearMessage = await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
+            }
+
+            [Command("dell")]
+            [Description("Удаление сообщений без вывода embed")]
+            public async Task Deln(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
+            {
+                var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
+                await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
+            }
+
+            [Command("act")]
+            [Description("Изменение статуса бота")]
+            public async Task Activity(CommandContext ctx, [Description("Новый статус")] params string[] content)
+            {
+                var changedContent = string.Join(" ", content);
+
+                if (changedContent == "reset")
+                {
+                    changedContent = "Zombies vs Plants";
+
+                    var activity = new DiscordActivity
+                    {
+                        Name = $"{changedContent}",
+                    };
+
+                    var activityEmbed = new DiscordEmbedBuilder
+                    {
+                        Description = $"Статус бота был успешно восстановлен.",
+                        Color = DiscordColor.Gold,
+                    };
+
+                    await ctx.Client.UpdateStatusAsync(activity);
+                    await ctx.Channel.SendMessageAsync(embed: activityEmbed).ConfigureAwait(false);
+                }
+                else
+                {
+                    var activityEmbed = new DiscordEmbedBuilder
+                    {
+                        Description = $"Статус бота успешно изменён на `{changedContent}`",
+                        Color = DiscordColor.Gold,
+                    };
+
+                    var activity = new DiscordActivity
+                    {
+                        Name = $"{changedContent}",
+                    };
+
+                    await ctx.Client.UpdateStatusAsync(activity);
+                    await ctx.Channel.SendMessageAsync(embed: activityEmbed).ConfigureAwait(false);
+                }
+            }
         }
-
-        [Command("dell")]
-        [Description("Удаление сообщений без вывода embed")]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Deln(CommandContext ctx, [Description("Количество сообщений для удаления")] int numberMessages)
-        {
-            var currentMsg = await ctx.Channel.GetMessagesAsync(numberMessages + 1);
-            await ctx.Channel.DeleteMessagesAsync(currentMsg, "Сообщение удалено с помощью команды `.clear`");
-        }
-
+        
         [Command("roll")]
         [Description("Получение случайного числа")]
         [RequireRoles(RoleCheckMode.None)]
@@ -108,67 +154,7 @@ namespace Sunflower.Bot.Commands
             Console.WriteLine($"[{DateTime.Now}] [Chat Log] Отправлено сообщение в чат: {joinMessage.Id}");
         }*/
 
-        [Command("rob")]
-        [Description("Создаёт эвент для ограбления пользователя")]
-        [RequireRoles(RoleCheckMode.None)]
-        public async Task Rob(CommandContext ctx, [Description("Пользователь, для попытки ограбления (`@username`)")] DiscordMember user)
-        {
-            Random rnd = new Random();
-            var interactivity = ctx.Client.GetInteractivity();
-            var statusBar = string.Empty;
-            var small = DiscordEmoji.FromName(ctx.Client, ":small:");
-            var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
-            var full = DiscordEmoji.FromName(ctx.Client, ":full:");
-            var fullRight = DiscordEmoji.FromName(ctx.Client, ":fullRight:");
-            var fullRightEnd = DiscordEmoji.FromName(ctx.Client, ":fullRightEnd:");
-            var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
-            var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
-            var randomPercent = rnd.Next(1, 100);
-
-            var thiefEmbed = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Gold
-            };
-
-            if (randomPercent <= 15)
-            {
-                statusBar = small + empty + empty + empty + empty + emptyRight;
-            }
-            else if (randomPercent <= 30)
-            {
-                statusBar = fullLeft + fullRight + empty + empty + empty + emptyRight;
-            }
-            else if (randomPercent <= 50)
-            {
-                statusBar = fullLeft + full + fullRight + empty + empty + emptyRight;
-            }
-            else if (randomPercent <= 90)
-            {
-                statusBar = fullLeft + full + full + fullRight + empty + emptyRight;
-            }
-            else if (randomPercent > 90)
-            {
-                statusBar = fullLeft + full + full + full + fullRight + emptyRight;
-            }
-            else if (randomPercent == 100)
-            {
-                statusBar = fullLeft + full + full + full + full + fullRightEnd;
-            }
-
-            if (user == ctx.User)
-            {
-                thiefEmbed.WithImageUrl("https://answers.ea.com/ea/attachments/ea/battlefield-v-game-information-ru/1635/1/1785C7EE-5715-48CA-A2FC-16479F84D644.jpeg");
-            }
-            else
-            {
-                thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
-                thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
-            }
-
-            var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
-        }
-
-        [Command("sugg")]
+        /*[Command("sugg")]
         [Description("Голосование за тему арта месяца для платных подписчиков")]
         [RequireRoles(RoleCheckMode.Any, "Twitch Sub", "Patreon Tier 3$")]
         public async Task Suggest(CommandContext ctx, [Description("Предложенная тема")] params string[] content)
@@ -222,82 +208,28 @@ namespace Sunflower.Bot.Commands
 
             codeEmbed.WithDescription($"Победитель: {msg.Result.Author.Mention}");
             await ctx.Channel.SendMessageAsync(embed: codeEmbed).ConfigureAwait(false);
-        }
-
-        [Command("act")]
-        [Description("Изменение статуса бота")]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Activity(CommandContext ctx, [Description("Новый статус")] params string[] content)
-        {
-            var changedContent = string.Join(" ", content);
-
-            var activity = new DiscordActivity
-            {
-                Name = $"{changedContent}",
-            };
-
-            var activityEmbed = new DiscordEmbedBuilder
-            {
-                Description = $"Статус бота успешно изменён на `{changedContent}`",
-                Color = DiscordColor.Gold,
-            };
-
-            await ctx.Client.UpdateStatusAsync(activity);
-            await ctx.Channel.SendMessageAsync(embed: activityEmbed).ConfigureAwait(false);
-        }
+        }*/
 
         [Command("botinfo")]
         [Description("Информация о боте")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Botinfo(CommandContext ctx)
         {
-            var sunflowerDance = DiscordEmoji.FromName(ctx.Client, ":sunflowerDance:");
-
             var botInfoEmbed = new DiscordEmbedBuilder
             {
-                Title = "Информация о боте",
-                Description = $"Дискорд-бот, основанный на игре Plants vs. Zombies, где игроку нужно было собирать солнышки для покупки растений.\n\nЗдесь действует похожая система по которой в случайный промежуток времени бот будет писать сообщение в чат и дарить пользователю определённое количество солнышек, зависящее от различных эвентов. Первый пользователь, кто напишет сообщение в чате получает солнышки.\n\n" +
-                    sunflowerDance + $"**Автор оригинального подсолнуха YoukaiDrawing:\n** VK: https://vk.com/pixel_youkai \n\n" +
-                    $"**Исходный код бота написанного на C# с применением библиотек DSharpPlus:\n** Github: https://github.com/aniv1re/SunflowerBot",
                 Color = DiscordColor.Gold,
             };
-            botInfoEmbed.WithThumbnail("https://media.discordapp.net/attachments/733938192604201073/735825414924140544/cockflower-dance.gif", 500, 500);
+            botInfoEmbed.WithAuthor(ctx.Guild.CurrentMember.Username + "#" + ctx.Guild.CurrentMember.Discriminator, null, ctx.Guild.CurrentMember.AvatarUrl);
+            botInfoEmbed.WithThumbnail("https://media.discordapp.net/attachments/720667905695678508/739437303499325510/cockflower-dance.gif", 500, 500);     
+            botInfoEmbed.AddField("Исходный код:", "GitHub: https://github.com/aniv1re/SunflowerBot", false);
+            botInfoEmbed.AddField("Автор аватара бота:", "VK: https://vk.com/pixel_youkai", false);
             botInfoEmbed.AddField("Дата создания:", ctx.Guild.CurrentMember.CreationTimestamp.DateTime.ToShortDateString(), true);
             botInfoEmbed.AddField("ID бота:", ctx.Guild.CurrentMember.Id.ToString(), true);
 
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\Config.json"));
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"D:\code\Sunflower\Sunflower\Config.json"));
             botInfoEmbed.AddField("Версия:", configJson.Version, true);
 
-
             await ctx.Channel.SendMessageAsync(embed: botInfoEmbed).ConfigureAwait(false);
-        }
-
-        [Command("palette")]
-        [Description("Создание палитры из случайно сгенерированных цветов")]
-        [RequireRoles(RoleCheckMode.None)]
-        public async Task Palette(CommandContext ctx, [Description("Количество цветов")]int colorNumber)
-        {
-            // max 170
-            string path = @"C:\Users\anivire\source\repos\Sunflower\Sunflower\bin\Debug\netcoreapp3.1\Palettes\";
-
-            var codes = String.Empty;
-            string[] hexArray = new string[colorNumber];
-
-            for (int i = 0; i != colorNumber; i++)
-            {
-                codes += String.Join(" ", $"`#{PaletteGeneration.ColorGen.RandomColor()}` ");
-            }
-
-            PaletteGeneration.ColorGen.CreateImage(path, colorNumber, hexArray);
-
-            var paletteEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Сгенерированные цвета:",
-                Description = $"{codes}",
-                Color = DiscordColor.Gold
-            };
-
-            await ctx.Channel.SendMessageAsync(embed: paletteEmbed).ConfigureAwait(false);
         }
 
         [Command("report")]

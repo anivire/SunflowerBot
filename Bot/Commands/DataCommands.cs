@@ -1,7 +1,7 @@
 ﻿using Sunflower.Bot.Attributes;
-using Sunflower.Bot.Data;
 using Newtonsoft.Json;
 using System.Text;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Commands​Next.Converters;
@@ -14,6 +14,9 @@ using System.Linq;
 using System.IO;
 using System.Data;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Sunflower.Models;
+using Sunflower.Context;
 
 namespace Sunflower.Bot.Commands
 {
@@ -21,41 +24,79 @@ namespace Sunflower.Bot.Commands
     {
         string path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\";
 
-        [Command("createdata")]
+        [Command("migrate")]
         [Hidden]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Createdata(CommandContext ctx)
+        public async Task Migrate(CommandContext ctx)
         {
-            path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\" + $"{ctx.Guild.Id}.json";
-            var users = ctx.Guild.Members;
+            await using SunflowerUsersContext users = new SunflowerUsersContext();
 
-            var getusersEmbed = new DiscordEmbedBuilder
+            if (users.Database.GetPendingMigrationsAsync().Result.Any())
             {
-                Description = $"Пользователи были добавлены в `{ctx.Guild.Id}.json`.",
-                Color = DiscordColor.Gold,
-            };
+                await users.Database.MigrateAsync();
+            }
 
-            DataCreate.CreateDB(path, users);
-
-            await ctx.Channel.SendMessageAsync(embed: getusersEmbed).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync("sqlite migration complete");
         }
 
-        [Command("load")]
+        [Command("createdb")]
         [Hidden]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task Load(CommandContext ctx)
+        public async Task CreateDB(CommandContext ctx)
         {
-            //var dataTable = DataLoad.LoadDB(path, ctx.Guild.Id);
+            var users = ctx.Guild.Members;
 
-            var loadDataEmbed = new DiscordEmbedBuilder
+            foreach (var item in users)
             {
-                Description = $"Загрузка пользователей из `{ctx.Guild.Id}.json`.",
+                var user = new Profile();
+                user.MemberId = item.Key;
+                user.MemberUsername = item.Value.Username;
+                user.MemberSunCount = 0;
+                user.DailyCooldown = DateTime.Now.Date;
+
+                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                {
+                    usersContext.Users.Add(user);
+                    await usersContext.SaveChangesAsync();
+                }
+            }
+
+            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            {
+                var count = usersContext.Users.Count();
+
+                await ctx.Channel.SendMessageAsync($"{count} users saved");
+            }
+
+        }
+
+        [Command("servers")]
+        [Description("Выводит список всех серверов на которых присутствует бот")]
+        [RequirePermissions(Permissions.Administrator)]
+        [Hidden]
+        public async Task Servers(CommandContext ctx)
+        {
+            var serversEmbed = new DiscordEmbedBuilder()
+            {
                 Color = DiscordColor.Gold,
             };
 
-            loadDataEmbed.AddField("Пользователи:", string.Join(" ", ctx.Guild.Members.Select(x => $"{x.Value.Mention}")));
+            var listName = String.Empty;
+            var listID = String.Empty;
+            var listMembers = String.Empty;
 
-            await ctx.Channel.SendMessageAsync(embed: loadDataEmbed).ConfigureAwait(false);
+            foreach (var item in ctx.Client.Guilds.Values)
+            {
+                listName = listName + string.Join(" ", item.Name  + "\n");
+                listID = listID + string.Join(" ", item.Id + "\n");
+                listMembers = listMembers + string.Join(" ", item.MemberCount + "\n");
+            }
+
+            serversEmbed.WithAuthor("Список серверов:", null, ctx.Guild.CurrentMember.AvatarUrl);
+            serversEmbed.AddField("Название:", listName, true);
+            serversEmbed.AddField("ID:", listID, true);
+            serversEmbed.AddField("Кол-во:", listMembers, true);
+            serversEmbed.WithTimestamp(DateTime.Now);
+
+            await ctx.Channel.SendMessageAsync(embed: serversEmbed).ConfigureAwait(false);
         }
 
         [Command("userinfo")]

@@ -9,6 +9,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Sunflower.Context;
+using Sunflower.Models;
 
 namespace Sunflower.Bot
 {
@@ -22,7 +24,7 @@ namespace Sunflower.Bot
         {
             var json = string.Empty;
 
-            using (var fs = File.OpenRead(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\Config.json"))
+            using (var fs = File.OpenRead(@"D:\code\Sunflower\Sunflower\Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
@@ -39,7 +41,10 @@ namespace Sunflower.Bot
 
             Client = new DiscordClient(config);
 
-            Client.Ready += Client_Ready;
+            Client.Ready += ClientReady;
+            Client.MessageCreated += OnMessageCreated;
+            Client.GuildMemberAdded += GuildMemberAdded;
+            Client.GuildCreated += GuildCreate;
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
@@ -58,7 +63,7 @@ namespace Sunflower.Bot
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<SunflowerCommands>();
-            Commands.RegisterCommands<UtilCommands>();
+            Commands.RegisterCommands<MainCommands>();
             Commands.RegisterCommands<DataCommands>();
 
             Commands.SetHelpFormatter<DefaultHelpFormatter>();
@@ -68,9 +73,9 @@ namespace Sunflower.Bot
             await Task.Delay(-1);
         }
         
-        private Task Client_Ready(ReadyEventArgs e)
+        private Task ClientReady(ReadyEventArgs ctx)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Бот успешно загружен.", DateTime.Now);
+            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Бот успешно загружен.", DateTime.Now);
 
             var activity = new DiscordActivity
             {
@@ -80,6 +85,48 @@ namespace Sunflower.Bot
             Client.UpdateStatusAsync(activity, UserStatus.Online, null);
 
             return Task.CompletedTask;
+        }
+
+        private static async Task OnMessageCreated(MessageCreateEventArgs ctx)
+        {
+            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Автор: {ctx.Author.Username}, гильдия: {ctx.Guild.Name}, сообщение: {ctx.Message.Content}", DateTime.Now);
+        }
+
+        private static async Task GuildMemberAdded(GuildMemberAddEventArgs ctx)
+        {
+            var user = new Profile();
+            user.MemberId = ctx.Member.Id;
+            user.MemberUsername = ctx.Member.Username;
+            user.MemberSunCount = 0;
+            user.DailyCooldown = DateTime.Now.Date;
+
+            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            {
+                usersContext.Users.Add(user);
+                await usersContext.SaveChangesAsync();
+            }
+        }
+
+        private static async Task GuildCreate(GuildCreateEventArgs ctx)
+        {
+            var users = ctx.Guild.Members;
+
+            foreach (var item in users)
+            {
+                var user = new Profile();
+                user.MemberId = item.Key;
+                user.MemberUsername = item.Value.Username;
+                user.MemberSunCount = 0;
+                user.DailyCooldown = DateTime.Now.Date;
+
+                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                {
+                    usersContext.Users.Add(user);
+                    await usersContext.SaveChangesAsync();
+                }
+            }
+
+            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {ctx.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }
     }
 }

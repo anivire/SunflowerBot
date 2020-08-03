@@ -22,19 +22,20 @@ namespace Sunflower.Bot
                 Title = "Помощь",
                 Color = DiscordColor.Gold,
             };
+            
         }
 
         public override BaseHelpFormatter WithCommand(Command command)
         {
             this.Command = command;
 
-            this.EmbedBuilder.WithDescription($"{Formatter.InlineCode(command.Name)}: {command.Description ?? "Автор придурок, забыл описание добавить"}");
+            this.EmbedBuilder.WithDescription($"{Formatter.InlineCode(command.Name)}: {command.Description ?? "Описание команды отсутствует"}");
 
             if (command is CommandGroup cgroup && cgroup.IsExecutableWithoutSubcommands)
-                this.EmbedBuilder.WithDescription($"{this.EmbedBuilder.Description}\n\nThis group can be executed as a standalone command");
+                this.EmbedBuilder.WithDescription($"{this.EmbedBuilder.Description}\n\nЭта группа может быть выполнена как отдельная команда");
 
             if (command.Aliases?.Any() == true)
-                this.EmbedBuilder.AddField("Aliases", string.Join(", ", command.Aliases.Select(Formatter.InlineCode)), false);
+                this.EmbedBuilder.AddField("Псевдонимы команд", string.Join(", ", command.Aliases.Select(Formatter.InlineCode)), true);
 
             if (command.Overloads?.Any() == true)
             {
@@ -50,7 +51,7 @@ namespace Sunflower.Bot
                     sb.Append("`\n");
 
                     foreach (var arg in ovl.Arguments)
-                        sb.Append('`').Append(arg.Name).Append(" (").Append(this.CommandsNext.GetUserFriendlyTypeName(arg.Type)).Append(")`: ").Append(arg.Description ?? "Автор придурок, забыл описание добавить").Append('\n');
+                        sb.Append('`').Append(arg.Name).Append(" (").Append(this.CommandsNext.GetUserFriendlyTypeName(arg.Type)).Append(")`: ").Append(arg.Description ?? "Описание отсутствует").Append('\n');
 
                     sb.Append('\n');
                 }
@@ -63,7 +64,7 @@ namespace Sunflower.Bot
 
         public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> subcommands)
         {
-            this.EmbedBuilder.AddField(this.Command != null ? "Подкоманды" : "Команды", string.Join(", ", subcommands.Select(x => Formatter.InlineCode(x.Name))), false);
+            this.EmbedBuilder.AddField(this.Command != null ? "Подкоманды" : "Команды", string.Join(", ", subcommands.Select(x => Formatter.InlineCode(x.Name))), true);
 
             return this;
         }
