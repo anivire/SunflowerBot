@@ -102,7 +102,7 @@ namespace Sunflower.Bot
 
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                usersContext.Users.Add(user);
+                usersContext.UserProfiles.Add(user);
                 await usersContext.SaveChangesAsync();
             }
         }
@@ -121,7 +121,7 @@ namespace Sunflower.Bot
 
                 using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
                 {
-                    usersContext.Users.Add(user);
+                    usersContext.UserProfiles.Add(user);
                     await usersContext.SaveChangesAsync();
                 }
             }

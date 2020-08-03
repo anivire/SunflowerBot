@@ -5,7 +5,7 @@ namespace Sunflower.Context
 {
     class SunflowerUsersContext : DbContext
     {
-        public DbSet<Profile> Users { get; set; }
+        public DbSet<Profile> UserProfiles { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder options)
             => options.UseSqlite("Data Source=SunflowerUsers.db");
     }

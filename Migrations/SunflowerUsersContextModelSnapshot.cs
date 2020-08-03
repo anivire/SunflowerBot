@@ -16,7 +16,7 @@ namespace Sunflower.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "5.0.0-preview.7.20365.15");
 
-            modelBuilder.Entity("Sunflower.Models.User", b =>
+            modelBuilder.Entity("Sunflower.Models.Profile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,7 +36,7 @@ namespace Sunflower.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("UserProfiles");
                 });
 #pragma warning restore 612, 618
         }

@@ -54,14 +54,14 @@ namespace Sunflower.Bot.Commands
 
                 using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
                 {
-                    usersContext.Users.Add(user);
+                    usersContext.UserProfiles.Add(user);
                     await usersContext.SaveChangesAsync();
                 }
             }
 
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                var count = usersContext.Users.Count();
+                var count = usersContext.UserProfiles.Count();
 
                 await ctx.Channel.SendMessageAsync($"{count} users saved");
             }
@@ -104,85 +104,40 @@ namespace Sunflower.Bot.Commands
         [RequireRoles(RoleCheckMode.None)]
         public async Task Userinfo(CommandContext ctx, [Description("Пользователь, информацию о котором хотите посмотреть")] DiscordMember user)
         {
-            DataSet dataSet = JsonConvert.DeserializeObject<DataSet>(File.ReadAllText(path + $"{ctx.Guild.Id}.json"));
-            DataTable dataTable = dataSet.Tables["Table1"];
-
             var userinfoEmbed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Gold,
             };
 
-            /*foreach (DataRow row in dataTable.Rows)
+            using (SunflowerUsersContext users = new SunflowerUsersContext())
             {
-                if (row["discordId"].ToString() == ctx.Member.Id.ToString())
+                foreach (var item in users.UserProfiles)
                 {
-                    var roles = ctx.Member.Roles;
-
-                    var botCheck = String.Empty;
-                    if (ctx.Member.IsBot)
+                    if (item.MemberId == user.Id)
                     {
-                        botCheck = " - Bot";
+                        var roles = user.Roles;
+
+                        var botCheck = String.Empty;
+                        if (user.IsBot)
+                        {
+                            botCheck = " [Bot]";
+                        }
+
+                        userinfoEmbed.WithTitle($"Пользователь {user.Username}#{user.Discriminator}" + botCheck);
+                        if (!user.IsBot)
+                        {
+                            userinfoEmbed.AddField("Количество солнц:", $":sunny: {item.MemberSunCount}", true);
+                        }
+                        userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
+                        userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
+                        userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
+                        userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
+
+                        await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                     }
-
-                    userinfoEmbed.WithTitle($"Пользователь {ctx.Member.Username}#{ctx.Member.Discriminator}" + botCheck);
-                    userinfoEmbed.AddField("Количество солнц:", $":sunny: {row["sunCount"]}", true);
-                    userinfoEmbed.AddField("Текущий ник:", ctx.Member.DisplayName, true);
-                    userinfoEmbed.AddField("Зашёл на сервер:", ctx.Member.JoinedAt.DateTime.ToShortDateString(), true);
-                    userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
-                    userinfoEmbed.WithThumbnail(ctx.Member.AvatarUrl, 500, 500);
-
-                    await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
-                }
-            }*/
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                if (row["discordId"].ToString() == user.Id.ToString())
-                {
-                    var roles = user.Roles;
-
-                    var botCheck = String.Empty;
-                    if (user.IsBot)
-                    {
-                        botCheck = " [Bot]";
-                    }
-
-                    userinfoEmbed.WithTitle($"Пользователь {user.Username}#{user.Discriminator}" + botCheck);
-                    userinfoEmbed.AddField("Количество солнц:", $":sunny: {row["sunCount"]}", true);
-                    userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
-                    userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
-                    userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
-                    userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
-
-                    await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                 }
             }
 
-        }
-
-        [Command("list")]
-        [Hidden]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        public async Task List(CommandContext ctx)
-        {
-            DirectoryInfo dir = new DirectoryInfo(@"C:\Users\anivire\source\repos\Sunflower\Sunflower\bin\Debug\netcoreapp3.1\Data\Guild");
-            var guilds = String.Empty;
-            var i = 1;
-
-            foreach (var item in dir.GetFiles())
-            {
-                guilds = guilds + string.Join(" ", $"{i}. `{item.Name}`\n");
-                i++;
-            }
-
-            var loadDataEmbed = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Gold,
-            };
-
-            loadDataEmbed.WithDescription("Доступные сервера:\n\n" + guilds);
-
-            await ctx.Channel.SendMessageAsync(embed: loadDataEmbed).ConfigureAwait(false);
         }
     }
 }
