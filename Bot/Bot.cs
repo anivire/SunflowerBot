@@ -95,59 +95,84 @@ namespace Sunflower.Bot
 
         private static async Task GuildMemberAdded(GuildMemberAddEventArgs ctx)
         {
+            var check = false;
+
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                foreach (var item in usersContext.UserProfiles)
+                try
                 {
-                    if (item.MemberId == ctx.Member.Id)
+                    foreach (var itemEX in usersContext.UserProfiles)
                     {
-                        continue;
+                        if (itemEX.MemberId == ctx.Member.Id)
+                        {
+                            check = true;
+                        }
                     }
-                    else
-                    {
-                        var user = new Profile();
-                        user.MemberId = ctx.Member.Id;
-                        user.MemberUsername = ctx.Member.Username;
-                        user.MemberSunCount = 0;
-                        user.DailyCooldown = DateTime.Now.Date;
+                }
+                catch (Exception)
+                {
+                    check = true;
+                }
 
-                        usersContext.UserProfiles.Add(user);
-                        await usersContext.SaveChangesAsync();
-                    }
+                if (check == false)
+                {
+                    var user = new Profile()
+                    {
+                        MemberId = ctx.Member.Id,
+                        MemberUsername = ctx.Member.Username,
+                        MemberSunCount = 0,
+                        DailyCooldown = DateTime.Now.Date
+                    };
+
+                    usersContext.UserProfiles.Add(user);
+                    await usersContext.SaveChangesAsync();
                 }
             }
         }
 
         private static async Task GuildCreate(GuildCreateEventArgs ctx)
         {
+            var check = false;
+
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                foreach (var itemEx in usersContext.UserProfiles)
+                foreach (var item in ctx.Guild.Members)
                 {
-                    Console.WriteLine("первый цикл");
-                    foreach (var item in ctx.Guild.Members)
+                    try
                     {
-                        Console.WriteLine("второй цикл");
-                        if (itemEx.MemberId == item.Key)
+                        foreach (var itemEX in usersContext.UserProfiles)
                         {
-                            continue;
+                            if (itemEX.MemberId == item.Key)
+                            {
+                                check = true;
+                            }
                         }
-                        else
-                        {
-                            Console.WriteLine("прошёл");
-                            var user = new Profile();
-                            user.MemberId = item.Key;
-                            user.MemberUsername = item.Value.Username;
-                            user.MemberSunCount = 0;
-                            user.DailyCooldown = DateTime.Now.Date;
+                    }
+                    catch (Exception)
+                    {
+                        check = true;
+                    }
 
-                            usersContext.UserProfiles.Add(user);
-                            await usersContext.SaveChangesAsync();
-                        }
+                    if (check == true)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        var user = new Profile()
+                        {
+                            MemberId = item.Key,
+                            MemberUsername = item.Value.Username,
+                            MemberSunCount = 0,
+                            DailyCooldown = DateTime.Now.Date
+                        };
+
+                        usersContext.UserProfiles.Add(user);
+                        await usersContext.SaveChangesAsync();
                     }
                 }
             }
-        
+
             ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {ctx.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }
     }

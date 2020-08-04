@@ -14,8 +14,6 @@ namespace Sunflower.Bot.Commands
 {
     public class DataCommands : BaseCommandModule
     {
-        string path = Environment.CurrentDirectory + "\\Data\\" + "Guild\\";
-
         [Command("migrate")]
         [Hidden]
         public async Task Migrate(CommandContext ctx)
@@ -103,9 +101,9 @@ namespace Sunflower.Bot.Commands
 
             foreach (var item in ctx.Client.Guilds.Values)
             {
-                listName = listName + string.Join(" ", item.Name  + "\n");
-                listID = listID + string.Join(" ", item.Id + "\n");
-                listMembers = listMembers + string.Join(" ", item.MemberCount + "\n");
+                listName += string.Join(" ", item.Name  + "\n");
+                listID += string.Join(" ", item.Id + "\n");
+                listMembers += string.Join(" ", item.MemberCount + "\n");
             }
 
             serversEmbed.WithAuthor("Список серверов:", null, ctx.Guild.CurrentMember.AvatarUrl);
