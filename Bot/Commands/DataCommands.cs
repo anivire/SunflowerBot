@@ -1,22 +1,14 @@
-﻿using Sunflower.Bot.Attributes;
-using Newtonsoft.Json;
-using System.Text;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Commands​Next.Converters;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Data;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Sunflower.Models;
 using Sunflower.Context;
+using Sunflower.Models;
+using System;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
 {
@@ -42,31 +34,57 @@ namespace Sunflower.Bot.Commands
         [Hidden]
         public async Task CreateDB(CommandContext ctx)
         {
-            var users = ctx.Guild.Members;
+            var temp = 0;
+            var check = false;
 
-            foreach (var item in users)
-            {
-                var user = new Profile();
-                user.MemberId = item.Key;
-                user.MemberUsername = item.Value.Username;
-                user.MemberSunCount = 0;
-                user.DailyCooldown = DateTime.Now.Date;
-
-                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
-                {
-                    usersContext.UserProfiles.Add(user);
-                    await usersContext.SaveChangesAsync();
-                }
-            }
+            await ctx.Channel.TriggerTypingAsync();
 
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                var count = usersContext.UserProfiles.Count();
+                foreach (var item in ctx.Guild.Members)
+                {
+                    try
+                    {
+                        foreach (var itemEX in usersContext.UserProfiles)
+                        {
+                            if (itemEX.MemberId == item.Key)
+                            {
+                                check = true;
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        check = true;
+                    }
 
-                await ctx.Channel.SendMessageAsync($"Принудительное сохранение пользователей завершено!");
+                    if (check == true)
+                    {
+                        temp++;
+                        continue;
+                    }
+                    else
+                    {
+                        var user = new Profile()
+                        {
+                            MemberId = item.Key,
+                            MemberUsername = item.Value.Username,
+                            MemberSunCount = 0,
+                            DailyCooldown = DateTime.Now.Date
+                        };
+
+                        usersContext.UserProfiles.Add(user);
+                        await usersContext.SaveChangesAsync();
+                    }
+                }
             }
 
+            await ctx.Channel.SendMessageAsync($"Количество совпадений {temp}");
+
+            await ctx.Channel.SendMessageAsync($"Принудительное сохранение пользователей завершено!");
         }
+    
+
 
         [Command("servers")]
         [Description("Выводит список всех серверов на которых присутствует бот")]

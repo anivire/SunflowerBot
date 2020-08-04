@@ -1,17 +1,10 @@
-﻿using Sunflower.Bot;
-using DSharpPlus.CommandsNext;
-using DSharpPlus;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using System.Security.Cryptography;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System;
 using System.IO;
-using System.Drawing;
+using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
 {
@@ -226,7 +219,7 @@ namespace Sunflower.Bot.Commands
             botInfoEmbed.AddField("Дата создания:", ctx.Guild.CurrentMember.CreationTimestamp.DateTime.ToShortDateString(), true);
             botInfoEmbed.AddField("ID бота:", ctx.Guild.CurrentMember.Id.ToString(), true);
 
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"D:\code\Sunflower\Sunflower\Config.json"));
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"D:\code\Sunflower\Config.json"));
             botInfoEmbed.AddField("Версия:", configJson.Version, true);
 
             await ctx.Channel.SendMessageAsync(embed: botInfoEmbed).ConfigureAwait(false);

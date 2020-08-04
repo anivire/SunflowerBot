@@ -9,6 +9,7 @@ using Sunflower.Context;
 using Sunflower.Models;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace Sunflower.Bot
         {
             var json = string.Empty;
 
-            using (var fs = File.OpenRead(@"D:\code\Sunflower\Sunflower\Config.json"))
+            using (var fs = File.OpenRead(@"D:\code\Sunflower\Config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
@@ -100,7 +101,7 @@ namespace Sunflower.Bot
                 {
                     if (item.MemberId == ctx.Member.Id)
                     {
-                        break;
+                        continue;
                     }
                     else
                     {
@@ -119,24 +120,34 @@ namespace Sunflower.Bot
 
         private static async Task GuildCreate(GuildCreateEventArgs ctx)
         {
-            var users = ctx.Guild.Members;
-
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                foreach (var item in users)
+                foreach (var itemEx in usersContext.UserProfiles)
                 {
-                    var user = new Profile();
-                    user.MemberId = item.Key;
-                    user.MemberUsername = item.Value.Username;
-                    user.MemberSunCount = 0;
-                    user.DailyCooldown = DateTime.Now.Date;
+                    Console.WriteLine("первый цикл");
+                    foreach (var item in ctx.Guild.Members)
+                    {
+                        Console.WriteLine("второй цикл");
+                        if (itemEx.MemberId == item.Key)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Console.WriteLine("прошёл");
+                            var user = new Profile();
+                            user.MemberId = item.Key;
+                            user.MemberUsername = item.Value.Username;
+                            user.MemberSunCount = 0;
+                            user.DailyCooldown = DateTime.Now.Date;
 
-                    usersContext.UserProfiles.Add(user);
-                    await usersContext.SaveChangesAsync();
+                            usersContext.UserProfiles.Add(user);
+                            await usersContext.SaveChangesAsync();
+                        }
+                    }
                 }
             }
         
-
             ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {ctx.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }
     }
