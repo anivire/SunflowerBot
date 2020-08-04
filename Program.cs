@@ -1,4 +1,7 @@
-﻿namespace Sunflower.Bot
+﻿using DSharpPlus.EventArgs;
+using System.Threading.Tasks;
+
+namespace Sunflower.Bot
 {
     class Program
     {

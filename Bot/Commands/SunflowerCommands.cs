@@ -1,14 +1,9 @@
-﻿using Sunflower.Bot.Attributes;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Commands​Next.Converters;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using Sunflower.Context;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
@@ -17,10 +12,9 @@ namespace Sunflower.Bot.Commands
     {
         [Command("sunny")]
         [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        [RequireRoles(RoleCheckMode.None)]
-        public async Task Sunny(CommandContext ctx)
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
+        public async Task Sunny(CommandContext ctx, [RemainingText, Description("Роль, которая необходима для уведомлений о начале эвентов")] DiscordRole role)
         {
-            var role = ctx.Guild.GetRole(720276705071333506);
             var interactivity = ctx.Client.GetInteractivity();
             var accept = DiscordEmoji.FromName(ctx.Client, ":sunflower:");
 
@@ -46,6 +40,66 @@ namespace Sunflower.Bot.Commands
 
                 // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);*/
             }
+        }
+
+        [Command("rob")]
+        [Description("Создаёт эвент для ограбления пользователя")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Rob(CommandContext ctx, [Description("Пользователь, для попытки ограбления (`@username`)")] DiscordMember user)
+        {
+            Random rnd = new Random();
+            var interactivity = ctx.Client.GetInteractivity();
+            var statusBar = string.Empty;
+            var small = DiscordEmoji.FromName(ctx.Client, ":small:");
+            var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
+            var full = DiscordEmoji.FromName(ctx.Client, ":full:");
+            var fullRight = DiscordEmoji.FromName(ctx.Client, ":fullRight:");
+            var fullRightEnd = DiscordEmoji.FromName(ctx.Client, ":fullRightEnd:");
+            var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
+            var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
+            var randomPercent = rnd.Next(1, 100);
+
+            var thiefEmbed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Gold
+            };
+
+            if (randomPercent <= 15)
+            {
+                statusBar = small + empty + empty + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 30)
+            {
+                statusBar = fullLeft + fullRight + empty + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 50)
+            {
+                statusBar = fullLeft + full + fullRight + empty + empty + emptyRight;
+            }
+            else if (randomPercent <= 90)
+            {
+                statusBar = fullLeft + full + full + fullRight + empty + emptyRight;
+            }
+            else if (randomPercent > 90)
+            {
+                statusBar = fullLeft + full + full + full + fullRight + emptyRight;
+            }
+            else if (randomPercent == 100)
+            {
+                statusBar = fullLeft + full + full + full + full + fullRightEnd;
+            }
+
+            if (user == ctx.User)
+            {
+                thiefEmbed.WithImageUrl("https://answers.ea.com/ea/attachments/ea/battlefield-v-game-information-ru/1635/1/1785C7EE-5715-48CA-A2FC-16479F84D644.jpeg");
+            }
+            else
+            {
+                thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
+                thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
+            }
+
+            var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
         }
 
         [Command("give")]
@@ -86,6 +140,19 @@ namespace Sunflower.Bot.Commands
                         Description = $"{user.Mention} успевает первым забрать солнышки!",
                         Color = DiscordColor.Gold,
                     };
+
+                    using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                    {
+                        foreach (var item in usersContext.UserProfiles)
+                        {
+                            if (item.MemberId == user.Id)
+                            {
+                                item.MemberSunCount = sunCount;
+
+                                await usersContext.SaveChangesAsync();
+                            }
+                        }
+                    }
 
                     var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);
 
