@@ -1,14 +1,9 @@
-﻿using Sunflower.Bot.Attributes;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Commands​Next.Converters;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using Sunflower.Context;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
@@ -17,7 +12,7 @@ namespace Sunflower.Bot.Commands
     {
         [Command("sunny")]
         [Description("Получение роли для уведомлений о начале **солнечных** эвентов")]
-        [RequireRoles(RoleCheckMode.None)]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         public async Task Sunny(CommandContext ctx, [RemainingText, Description("Роль, которая необходима для уведомлений о начале эвентов")] DiscordRole role)
         {
             var interactivity = ctx.Client.GetInteractivity();
@@ -145,6 +140,19 @@ namespace Sunflower.Bot.Commands
                         Description = $"{user.Mention} успевает первым забрать солнышки!",
                         Color = DiscordColor.Gold,
                     };
+
+                    using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                    {
+                        foreach (var item in usersContext.UserProfiles)
+                        {
+                            if (item.MemberId == user.Id)
+                            {
+                                item.MemberSunCount = sunCount;
+
+                                await usersContext.SaveChangesAsync();
+                            }
+                        }
+                    }
 
                     var joinMessage = await ctx.Channel.SendMessageAsync(embed: giveawayEndEmbed).ConfigureAwait(false);
 

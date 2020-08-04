@@ -35,7 +35,7 @@ namespace Sunflower.Bot.Commands
                 await users.Database.MigrateAsync();
             }
 
-            await ctx.Channel.SendMessageAsync("sqlite migration complete");
+            await ctx.Channel.SendMessageAsync("Миграция SQLite успешно завершена!");
         }
 
         [Command("createdb")]
@@ -63,7 +63,7 @@ namespace Sunflower.Bot.Commands
             {
                 var count = usersContext.UserProfiles.Count();
 
-                await ctx.Channel.SendMessageAsync($"{count} users saved");
+                await ctx.Channel.SendMessageAsync($"Принудительное сохранение пользователей завершено!");
             }
 
         }
@@ -109,9 +109,9 @@ namespace Sunflower.Bot.Commands
                 Color = DiscordColor.Gold,
             };
 
-            using (SunflowerUsersContext users = new SunflowerUsersContext())
+            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                foreach (var item in users.UserProfiles)
+                foreach (var item in usersContext.UserProfiles)
                 {
                     if (item.MemberId == user.Id)
                     {
@@ -120,14 +120,15 @@ namespace Sunflower.Bot.Commands
                         var botCheck = String.Empty;
                         if (user.IsBot)
                         {
-                            botCheck = " [Bot]";
+                            botCheck = " Bot";
                         }
+                        userinfoEmbed.WithAuthor($"{user.Username}#{user.Discriminator}" + botCheck, null, user.AvatarUrl);
 
-                        userinfoEmbed.WithTitle($"Пользователь {user.Username}#{user.Discriminator}" + botCheck);
                         if (!user.IsBot)
                         {
                             userinfoEmbed.AddField("Количество солнц:", $":sunny: {item.MemberSunCount}", true);
                         }
+                        
                         userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
                         userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
                         userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));

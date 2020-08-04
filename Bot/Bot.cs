@@ -1,16 +1,16 @@
-﻿using Sunflower.Bot.Commands;
-using DSharpPlus;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
+using Sunflower.Bot.Commands;
+using Sunflower.Context;
+using Sunflower.Models;
 using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Sunflower.Context;
-using Sunflower.Models;
 
 namespace Sunflower.Bot
 {
@@ -94,16 +94,26 @@ namespace Sunflower.Bot
 
         private static async Task GuildMemberAdded(GuildMemberAddEventArgs ctx)
         {
-            var user = new Profile();
-            user.MemberId = ctx.Member.Id;
-            user.MemberUsername = ctx.Member.Username;
-            user.MemberSunCount = 0;
-            user.DailyCooldown = DateTime.Now.Date;
-
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                usersContext.UserProfiles.Add(user);
-                await usersContext.SaveChangesAsync();
+                foreach (var item in usersContext.UserProfiles)
+                {
+                    if (item.MemberId == ctx.Member.Id)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        var user = new Profile();
+                        user.MemberId = ctx.Member.Id;
+                        user.MemberUsername = ctx.Member.Username;
+                        user.MemberSunCount = 0;
+                        user.DailyCooldown = DateTime.Now.Date;
+
+                        usersContext.UserProfiles.Add(user);
+                        await usersContext.SaveChangesAsync();
+                    }
+                }
             }
         }
 
@@ -111,20 +121,21 @@ namespace Sunflower.Bot
         {
             var users = ctx.Guild.Members;
 
-            foreach (var item in users)
+            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                var user = new Profile();
-                user.MemberId = item.Key;
-                user.MemberUsername = item.Value.Username;
-                user.MemberSunCount = 0;
-                user.DailyCooldown = DateTime.Now.Date;
-
-                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                foreach (var item in users)
                 {
+                    var user = new Profile();
+                    user.MemberId = item.Key;
+                    user.MemberUsername = item.Value.Username;
+                    user.MemberSunCount = 0;
+                    user.DailyCooldown = DateTime.Now.Date;
+
                     usersContext.UserProfiles.Add(user);
                     await usersContext.SaveChangesAsync();
                 }
             }
+        
 
             ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {ctx.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }
