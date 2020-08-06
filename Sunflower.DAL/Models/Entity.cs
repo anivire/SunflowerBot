@@ -5,6 +5,6 @@ namespace Sunflower.DAL.Models
     public abstract class Entity
     {
         [Key]
-        public int Id { get; set; }
+        public ulong Id { get; set; }
     }
 }

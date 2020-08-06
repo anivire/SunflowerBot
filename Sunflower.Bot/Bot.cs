@@ -7,8 +7,8 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
 using Sunflower.Bot.Commands;
-using Sunflower.Context;
-using Sunflower.Models;
+using Sunflower.DAL.Context;
+using Sunflower.DAL.Models;
 using System;
 using System.IO;
 using System.Linq;
@@ -137,6 +137,7 @@ namespace Sunflower.Bot
                 {
                     var user = new Profile()
                     {
+                        GuildId = e.Guild.Id,
                         MemberId = e.Member.Id,
                         MemberUsername = e.Member.Username,
                         MemberSunCount = 0,
@@ -157,7 +158,7 @@ namespace Sunflower.Bot
                 {
                     var check = false;
 
-                    if (usersContext.UserProfiles.Any(x => x.MemberId == item.Key))
+                    if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
                     {
                         check = true;
                     }
@@ -170,6 +171,7 @@ namespace Sunflower.Bot
                     {
                         var user = new Profile()
                         {
+                            GuildId = e.Guild.Id,
                             MemberId = item.Key,
                             MemberUsername = item.Value.Username,
                             MemberSunCount = 0,

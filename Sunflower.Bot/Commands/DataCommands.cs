@@ -3,8 +3,8 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
-using Sunflower.Context;
-using Sunflower.Models;
+using Sunflower.DAL.Context;
+using Sunflower.DAL.Models;
 using System;
 using System.Data;
 using System.Linq;
@@ -44,7 +44,7 @@ namespace Sunflower.Bot.Commands
                 {
                     var check = false;
 
-                    if (usersContext.UserProfiles.Any(x => x.MemberId == item.Key))
+                    if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
                     {
                         check = true;
                     }
@@ -57,6 +57,7 @@ namespace Sunflower.Bot.Commands
                     {
                         var user = new Profile()
                         {
+                            GuildId = ctx.Guild.Id,
                             MemberId = item.Key,
                             MemberUsername = item.Value.Username,
                             MemberSunCount = 0,
@@ -119,7 +120,7 @@ namespace Sunflower.Bot.Commands
             {
                 foreach (var item in usersContext.UserProfiles)
                 {
-                    if (item.MemberId == user.Id)
+                    if (item.MemberId == user.Id && item.GuildId == user.Guild.Id)
                     {
                         var botCheck = String.Empty;
                         if (user.IsBot)

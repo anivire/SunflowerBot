@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Sunflower.DAL.Migrations
+namespace Sunflower.Migrations
 {
-    public partial class InitUsersDB : Migration
+    public partial class InitSunflowerDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,6 +13,7 @@ namespace Sunflower.DAL.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    GuildId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     MemberId = table.Column<ulong>(type: "INTEGER", nullable: false),
                     MemberUsername = table.Column<string>(type: "TEXT", nullable: true),
                     MemberSunCount = table.Column<int>(type: "INTEGER", nullable: false),

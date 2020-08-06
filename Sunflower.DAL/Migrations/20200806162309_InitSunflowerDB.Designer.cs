@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Sunflower.Context;
+using Sunflower.DAL.Context;
 
 namespace Sunflower.Migrations
 {
     [DbContext(typeof(SunflowerUsersContext))]
-    [Migration("20200803181337_InitUsersDB")]
-    partial class InitUsersDB
+    [Migration("20200806162309_InitSunflowerDB")]
+    partial class InitSunflowerDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -18,7 +18,7 @@ namespace Sunflower.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "5.0.0-preview.7.20365.15");
 
-            modelBuilder.Entity("Sunflower.Models.Profile", b =>
+            modelBuilder.Entity("Sunflower.DAL.Models.Profile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -26,6 +26,9 @@ namespace Sunflower.Migrations
 
                     b.Property<DateTime>("DailyCooldown")
                         .HasColumnType("TEXT");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<ulong>("MemberId")
                         .HasColumnType("INTEGER");

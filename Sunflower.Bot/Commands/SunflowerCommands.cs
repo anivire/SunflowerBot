@@ -51,7 +51,7 @@ namespace Sunflower.Bot.Commands
             {
                 foreach (var item in usersContext.UserProfiles)
                 {
-                    if (item.MemberId == ctx.User.Id)
+                    if (item.MemberId == ctx.User.Id && item.GuildId == ctx.Guild.Id)
                     {
                         if (DateTime.Compare(DateTime.Now, item.DailyCooldown) > 0)
                         {
