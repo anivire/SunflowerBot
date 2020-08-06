@@ -8,6 +8,7 @@ using Sunflower.Models;
 using System;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
@@ -15,6 +16,7 @@ namespace Sunflower.Bot.Commands
     public class DataCommands : BaseCommandModule
     {
         [Command("migrate")]
+        [RequirePermissions(Permissions.Administrator)]
         [Hidden]
         public async Task Migrate(CommandContext ctx)
         {
@@ -25,40 +27,30 @@ namespace Sunflower.Bot.Commands
                 await users.Database.MigrateAsync();
             }
 
-            await ctx.Channel.SendMessageAsync("Миграция SQLite успешно завершена!");
+            var migrateEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Миграция SQLite успешно завершена!");
+            await ctx.Channel.SendMessageAsync(embed: migrateEmbed).ConfigureAwait(false);
         }
 
         [Command("createdb")]
+        [RequirePermissions(Permissions.Administrator)]
         [Hidden]
         public async Task CreateDB(CommandContext ctx)
         {
-            var temp = 0;
-            var check = false;
-
             await ctx.Channel.TriggerTypingAsync();
 
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
                 foreach (var item in ctx.Guild.Members)
                 {
-                    try
-                    {
-                        foreach (var itemEX in usersContext.UserProfiles)
-                        {
-                            if (itemEX.MemberId == item.Key)
-                            {
-                                check = true;
-                            }
-                        }
-                    }
-                    catch (Exception)
+                    var check = false;
+
+                    if (usersContext.UserProfiles.Any(x => x.MemberId == item.Key))
                     {
                         check = true;
                     }
 
                     if (check == true)
                     {
-                        temp++;
                         continue;
                     }
                     else
@@ -74,12 +66,13 @@ namespace Sunflower.Bot.Commands
                         usersContext.UserProfiles.Add(user);
                         await usersContext.SaveChangesAsync();
                     }
+                    
                 }
             }
 
-            await ctx.Channel.SendMessageAsync($"Количество совпадений {temp}");
+            var createDBEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Принудительное сохранение пользователей завершено!");
 
-            await ctx.Channel.SendMessageAsync($"Принудительное сохранение пользователей завершено!");
+            await ctx.Channel.SendMessageAsync(embed: createDBEmbed).ConfigureAwait(false);
         }
     
 
@@ -92,7 +85,7 @@ namespace Sunflower.Bot.Commands
         {
             var serversEmbed = new DiscordEmbedBuilder()
             {
-                Color = DiscordColor.Gold,
+                Color = DiscordColor.Gold
             };
 
             var listName = String.Empty;
@@ -101,7 +94,7 @@ namespace Sunflower.Bot.Commands
 
             foreach (var item in ctx.Client.Guilds.Values)
             {
-                listName += string.Join(" ", item.Name  + "\n");
+                listName += string.Join(" ", item.Name + "\n");
                 listID += string.Join(" ", item.Id + "\n");
                 listMembers += string.Join(" ", item.MemberCount + "\n");
             }
@@ -122,7 +115,7 @@ namespace Sunflower.Bot.Commands
         {
             var userinfoEmbed = new DiscordEmbedBuilder
             {
-                Color = DiscordColor.Gold,
+                Color = DiscordColor.Gold
             };
 
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
@@ -131,8 +124,6 @@ namespace Sunflower.Bot.Commands
                 {
                     if (item.MemberId == user.Id)
                     {
-                        var roles = user.Roles;
-
                         var botCheck = String.Empty;
                         if (user.IsBot)
                         {
@@ -147,8 +138,16 @@ namespace Sunflower.Bot.Commands
                         
                         userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
                         userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
-                        userinfoEmbed.AddField("Роли:", string.Join(" ", roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}")));
+
+                        var roles = string.Join(" ", user.Roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}"));
+
+                        if (roles != String.Empty)
+                        {
+                            userinfoEmbed.AddField("Роли:", roles);
+                        }
+                        
                         userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
+                        userinfoEmbed.WithTimestamp(DateTime.Now);
 
                         await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                     }

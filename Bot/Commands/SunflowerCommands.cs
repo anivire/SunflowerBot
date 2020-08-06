@@ -22,7 +22,7 @@ namespace Sunflower.Bot.Commands
             {
                 Title = "Хочешь получать уведомления о предстоящих солнечных эвентах?\n",
                 Description = $":sunflower: Выбери эмодзи для получения роли.\n\nДанная роль позволяет разрешать упоминать вас ({role.Mention}), во время различных событий, для получения солнышек и других наград.\n\nПосле выбора эмодзи сообщение удалится и вы получите роль. Чтобы отписаться от рассылки наберите команду вновь и отреагируюте эмодзи.",
-                Color = DiscordColor.Gold,
+                Color = DiscordColor.Gold
             };
 
             var joinMessage = await ctx.Channel.SendMessageAsync(embed: joinEmbed).ConfigureAwait(false);
@@ -48,7 +48,7 @@ namespace Sunflower.Bot.Commands
         public async Task Rob(CommandContext ctx, [Description("Пользователь, для попытки ограбления (`@username`)")] DiscordMember user)
         {
             Random rnd = new Random();
-            var interactivity = ctx.Client.GetInteractivity();
+            
             var statusBar = string.Empty;
             var small = DiscordEmoji.FromName(ctx.Client, ":small:");
             var fullLeft = DiscordEmoji.FromName(ctx.Client, ":fullLeft:");
@@ -99,7 +99,7 @@ namespace Sunflower.Bot.Commands
                 thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
             }
 
-            var thiefMessage = await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
         }
 
         [Command("give")]
@@ -113,7 +113,7 @@ namespace Sunflower.Bot.Commands
             var giveawayEmbed = new DiscordEmbedBuilder
             {
                 Title = "Получение солнышек",
-                Color = DiscordColor.Gold,
+                Color = DiscordColor.Gold
             };
 
             if (string.Join(" ", content) == string.Empty)
@@ -138,7 +138,7 @@ namespace Sunflower.Bot.Commands
                     var giveawayEndEmbed = new DiscordEmbedBuilder
                     {
                         Description = $"{user.Mention} успевает первым забрать солнышки!",
-                        Color = DiscordColor.Gold,
+                        Color = DiscordColor.Gold
                     };
 
                     using (SunflowerUsersContext usersContext = new SunflowerUsersContext())

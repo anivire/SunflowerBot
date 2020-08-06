@@ -1,5 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
@@ -10,7 +12,9 @@ using Sunflower.Models;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot
@@ -46,6 +50,7 @@ namespace Sunflower.Bot
             Client.MessageCreated += OnMessageCreated;
             Client.GuildMemberAdded += GuildMemberAdded;
             Client.GuildCreated += GuildCreate;
+            //Client.GuildAvailable += GuildAvailable;
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
@@ -67,16 +72,45 @@ namespace Sunflower.Bot
             Commands.RegisterCommands<MainCommands>();
             Commands.RegisterCommands<DataCommands>();
 
+            Commands.CommandErrored += OnCommandError;
+
             Commands.SetHelpFormatter<DefaultHelpFormatter>();
 
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
         }
-        
-        private Task ClientReady(ReadyEventArgs ctx)
+
+        private async Task OnCommandError(CommandErrorEventArgs e)
         {
-            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Бот успешно загружен.", DateTime.Now);
+            var errorEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold);
+
+            if (e.Exception is ChecksFailedException)
+            {
+                var propError = (ChecksFailedException)e.Exception;
+
+                if (propError.FailedChecks[0] is RequireRolesAttribute)
+                {
+                    errorEmbed.WithDescription("У вас нет необходимой роли на выполнение данной команды.");
+                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
+                }
+                else
+                {
+                    errorEmbed.WithDescription("У вас нет прав на выполнение данной команды.");
+                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
+                }
+            }
+            else
+            {
+                errorEmbed.WithDescription(e.Exception.Message);
+                await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
+            }
+           
+        }
+
+        private Task ClientReady(ReadyEventArgs e)
+        {
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Бот успешно загружен.", DateTime.Now);
 
             var activity = new DiscordActivity
             {
@@ -84,32 +118,23 @@ namespace Sunflower.Bot
             };
 
             Client.UpdateStatusAsync(activity, UserStatus.Online, null);
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Статус бота успешно изменён.", DateTime.Now);
 
             return Task.CompletedTask;
         }
 
-        private static async Task OnMessageCreated(MessageCreateEventArgs ctx)
+        private static async Task OnMessageCreated(MessageCreateEventArgs e)
         {
-            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Автор: {ctx.Author.Username}, гильдия: {ctx.Guild.Name}, сообщение: {ctx.Message.Content}", DateTime.Now);
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Автор: {e.Author.Username}, гильдия: {e.Guild.Name}, сообщение: {e.Message.Content}", DateTime.Now);
         }
 
-        private static async Task GuildMemberAdded(GuildMemberAddEventArgs ctx)
+        private static async Task GuildMemberAdded(GuildMemberAddEventArgs e)
         {
-            var check = false;
-
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                try
-                {
-                    foreach (var itemEX in usersContext.UserProfiles)
-                    {
-                        if (itemEX.MemberId == ctx.Member.Id)
-                        {
-                            check = true;
-                        }
-                    }
-                }
-                catch (Exception)
+                var check = false;
+
+                if (usersContext.UserProfiles.Any(x => x.MemberId == e.Member.Id))
                 {
                     check = true;
                 }
@@ -118,8 +143,8 @@ namespace Sunflower.Bot
                 {
                     var user = new Profile()
                     {
-                        MemberId = ctx.Member.Id,
-                        MemberUsername = ctx.Member.Username,
+                        MemberId = e.Member.Id,
+                        MemberUsername = e.Member.Username,
                         MemberSunCount = 0,
                         DailyCooldown = DateTime.Now.Date
                     };
@@ -130,25 +155,15 @@ namespace Sunflower.Bot
             }
         }
 
-        private static async Task GuildCreate(GuildCreateEventArgs ctx)
+        private static async Task GuildCreate(GuildCreateEventArgs e)
         {
-            var check = false;
-
             using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
             {
-                foreach (var item in ctx.Guild.Members)
+                foreach (var item in e.Guild.Members)
                 {
-                    try
-                    {
-                        foreach (var itemEX in usersContext.UserProfiles)
-                        {
-                            if (itemEX.MemberId == item.Key)
-                            {
-                                check = true;
-                            }
-                        }
-                    }
-                    catch (Exception)
+                    var check = false;
+
+                    if (usersContext.UserProfiles.Any(x => x.MemberId == item.Key))
                     {
                         check = true;
                     }
@@ -170,10 +185,11 @@ namespace Sunflower.Bot
                         usersContext.UserProfiles.Add(user);
                         await usersContext.SaveChangesAsync();
                     }
+
                 }
             }
 
-            ctx.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {ctx.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {e.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }
     }
 }
