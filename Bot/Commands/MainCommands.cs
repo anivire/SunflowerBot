@@ -30,7 +30,7 @@ namespace Sunflower.Bot.Commands
 
                 delEmbed.WithDescription($"Удалено {numberMessages} сообщений");
 
-                var clearMessage = await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync(embed: delEmbed).ConfigureAwait(false);
             }
 
             [Command("dell")]
@@ -59,7 +59,7 @@ namespace Sunflower.Bot.Commands
                     var activityEmbed = new DiscordEmbedBuilder
                     {
                         Description = $"Статус бота был успешно восстановлен.",
-                        Color = DiscordColor.Gold,
+                        Color = DiscordColor.Gold
                     };
 
                     await ctx.Client.UpdateStatusAsync(activity);
@@ -70,7 +70,7 @@ namespace Sunflower.Bot.Commands
                     var activityEmbed = new DiscordEmbedBuilder
                     {
                         Description = $"Статус бота успешно изменён на `{changedContent}`",
-                        Color = DiscordColor.Gold,
+                        Color = DiscordColor.Gold
                     };
 
                     var activity = new DiscordActivity
@@ -100,13 +100,13 @@ namespace Sunflower.Bot.Commands
             {
                 rollEmbed.WithDescription($"🎲 Случайное число: {rnd.Next(min, max + 1)}");
 
-                var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
             }
             else if (max <= 1)
             {
                 rollEmbed.WithDescription("Некорректно заданное число");
 
-                var rollMessage = await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync(embed: rollEmbed).ConfigureAwait(false);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Sunflower.Bot.Commands
         {
             var botInfoEmbed = new DiscordEmbedBuilder
             {
-                Color = DiscordColor.Gold,
+                Color = DiscordColor.Gold
             };
             botInfoEmbed.WithAuthor(ctx.Guild.CurrentMember.Username + "#" + ctx.Guild.CurrentMember.Discriminator, null, ctx.Guild.CurrentMember.AvatarUrl);
             botInfoEmbed.WithThumbnail("https://media.discordapp.net/attachments/720667905695678508/739437303499325510/cockflower-dance.gif", 500, 500);     
