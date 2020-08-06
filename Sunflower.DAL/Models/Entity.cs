@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Sunflower.Models
+namespace Sunflower.DAL.Models
 {
     public abstract class Entity
     {

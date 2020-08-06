@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sunflower.Models;
+using Sunflower.DAL.Models;
 
-namespace Sunflower.Context
+namespace Sunflower.DAL.Context
 {
     class SunflowerUsersContext : DbContext
     {

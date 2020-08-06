@@ -2,7 +2,7 @@
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using Sunflower.Context;
+using Sunflower.DAL.Context;
 using System;
 using System.Threading.Tasks;
 
@@ -42,6 +42,47 @@ namespace Sunflower.Bot.Commands
             }
         }
 
+        [Command("daily")]
+        [Description("")]
+        [RequireRoles(RoleCheckMode.None)]
+        public async Task Daily(CommandContext ctx)
+        {
+            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            {
+                foreach (var item in usersContext.UserProfiles)
+                {
+                    if (item.MemberId == ctx.User.Id)
+                    {
+                        if (DateTime.Compare(DateTime.Now, item.DailyCooldown) > 0)
+                        {
+                            var reward = new Random().Next(25, 50);
+                            var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold);
+
+                            dailyEmbed.WithAuthor("Ежедневная награда", null, ctx.User.AvatarUrl);
+                            dailyEmbed.AddField("Солнышки", $"+{reward} :sunny:", true);
+                            //dailyEmbed.AddField("Растения", "`empty`", true);
+                            //dailyEmbed.AddField("Семена", "`empty`", true);
+                            dailyEmbed.WithTimestamp(DateTime.Now);
+
+                            item.MemberSunCount += reward;
+                            item.DailyCooldown = DateTime.Now.AddHours(12);
+                            await usersContext.SaveChangesAsync();
+
+                            await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            var temp = item.DailyCooldown - DateTime.Now;
+
+                            var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Вы уже получили ежедневную награду.\n" +
+                                $"Следующая награда будет доступна через **{temp.Hours}:{temp.Minutes}:{temp.Seconds}**");
+                            await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+        }
+
         [Command("rob")]
         [Description("Создаёт эвент для ограбления пользователя")]
         [RequireRoles(RoleCheckMode.None)]
@@ -57,12 +98,9 @@ namespace Sunflower.Bot.Commands
             var fullRightEnd = DiscordEmoji.FromName(ctx.Client, ":fullRightEnd:");
             var empty = DiscordEmoji.FromName(ctx.Client, ":empty:");
             var emptyRight = DiscordEmoji.FromName(ctx.Client, ":emptyRight:");
-            var randomPercent = rnd.Next(1, 100);
+            var randomPercent = rnd.Next(0, 101);
 
-            var thiefEmbed = new DiscordEmbedBuilder
-            {
-                Color = DiscordColor.Gold
-            };
+            var thiefEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold);
 
             if (randomPercent <= 15)
             {
@@ -76,15 +114,15 @@ namespace Sunflower.Bot.Commands
             {
                 statusBar = fullLeft + full + fullRight + empty + empty + emptyRight;
             }
-            else if (randomPercent <= 90)
+            else if (randomPercent < 90)
             {
                 statusBar = fullLeft + full + full + fullRight + empty + emptyRight;
             }
-            else if (randomPercent > 90)
+            else if (randomPercent >= 90 && randomPercent < 100)
             {
                 statusBar = fullLeft + full + full + full + fullRight + emptyRight;
             }
-            else if (randomPercent == 100)
+            else if (randomPercent >= 100)
             {
                 statusBar = fullLeft + full + full + full + full + fullRightEnd;
             }
@@ -92,14 +130,21 @@ namespace Sunflower.Bot.Commands
             if (user == ctx.User)
             {
                 thiefEmbed.WithImageUrl("https://answers.ea.com/ea/attachments/ea/battlefield-v-game-information-ru/1635/1/1785C7EE-5715-48CA-A2FC-16479F84D644.jpeg");
+                await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
             }
             else
             {
                 thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
                 thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
-            }
 
-            await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
+                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                {
+                    
+                }
+
+                
+                await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
+            }
         }
 
         [Command("give")]
@@ -115,6 +160,12 @@ namespace Sunflower.Bot.Commands
                 Title = "Получение солнышек",
                 Color = DiscordColor.Gold
             };
+
+            if (sunCount <= 0)
+            {
+                await ctx.Channel.SendMessageAsync(embed: giveawayEmbed.WithDescription("Вы ввели неправильное количество солнц для выдачи.")).ConfigureAwait(false);
+                return; 
+            }
 
             if (string.Join(" ", content) == string.Empty)
             {
@@ -147,7 +198,7 @@ namespace Sunflower.Bot.Commands
                         {
                             if (item.MemberId == user.Id)
                             {
-                                item.MemberSunCount = sunCount;
+                                item.MemberSunCount += sunCount;
 
                                 await usersContext.SaveChangesAsync();
                             }

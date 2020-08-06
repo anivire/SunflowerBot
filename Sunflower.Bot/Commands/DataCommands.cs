@@ -16,7 +16,7 @@ namespace Sunflower.Bot.Commands
     public class DataCommands : BaseCommandModule
     {
         [Command("migrate")]
-        [RequirePermissions(Permissions.Administrator)]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         [Hidden]
         public async Task Migrate(CommandContext ctx)
         {
@@ -32,7 +32,7 @@ namespace Sunflower.Bot.Commands
         }
 
         [Command("createdb")]
-        [RequirePermissions(Permissions.Administrator)]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         [Hidden]
         public async Task CreateDB(CommandContext ctx)
         {
@@ -60,7 +60,7 @@ namespace Sunflower.Bot.Commands
                             MemberId = item.Key,
                             MemberUsername = item.Value.Username,
                             MemberSunCount = 0,
-                            DailyCooldown = DateTime.Now.Date
+                            DailyCooldown = DateTime.Now
                         };
 
                         usersContext.UserProfiles.Add(user);
@@ -69,17 +69,14 @@ namespace Sunflower.Bot.Commands
                     
                 }
             }
-
             var createDBEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Принудительное сохранение пользователей завершено!");
 
             await ctx.Channel.SendMessageAsync(embed: createDBEmbed).ConfigureAwait(false);
         }
-    
-
 
         [Command("servers")]
         [Description("Выводит список всех серверов на которых присутствует бот")]
-        [RequirePermissions(Permissions.Administrator)]
+        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
         [Hidden]
         public async Task Servers(CommandContext ctx)
         {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sunflower.Models
+namespace Sunflower.DAL.Models
 {
     class Profile : Entity
     {

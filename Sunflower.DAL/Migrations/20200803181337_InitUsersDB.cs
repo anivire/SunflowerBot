@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Sunflower.Migrations
+namespace Sunflower.DAL.Migrations
 {
     public partial class InitUsersDB : Migration
     {

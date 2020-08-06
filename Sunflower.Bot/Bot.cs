@@ -63,7 +63,7 @@ namespace Sunflower.Bot
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 DmHelp = false,
-                EnableDefaultHelp = true,
+                EnableDefaultHelp = false,
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -92,20 +92,14 @@ namespace Sunflower.Bot
                 if (propError.FailedChecks[0] is RequireRolesAttribute)
                 {
                     errorEmbed.WithDescription("У вас нет необходимой роли на выполнение данной команды.");
-                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
+                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed).ConfigureAwait(false);
                 }
                 else
                 {
                     errorEmbed.WithDescription("У вас нет прав на выполнение данной команды.");
-                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
+                    await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed).ConfigureAwait(false);
                 }
-            }
-            else
-            {
-                errorEmbed.WithDescription(e.Exception.Message);
-                await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed);
-            }
-           
+            }           
         }
 
         private Task ClientReady(ReadyEventArgs e)
@@ -146,7 +140,7 @@ namespace Sunflower.Bot
                         MemberId = e.Member.Id,
                         MemberUsername = e.Member.Username,
                         MemberSunCount = 0,
-                        DailyCooldown = DateTime.Now.Date
+                        DailyCooldown = DateTime.Now
                     };
 
                     usersContext.UserProfiles.Add(user);
@@ -179,7 +173,7 @@ namespace Sunflower.Bot
                             MemberId = item.Key,
                             MemberUsername = item.Value.Username,
                             MemberSunCount = 0,
-                            DailyCooldown = DateTime.Now.Date
+                            DailyCooldown = DateTime.Now
                         };
 
                         usersContext.UserProfiles.Add(user);
