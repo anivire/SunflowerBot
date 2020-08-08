@@ -20,7 +20,7 @@ namespace Sunflower.Bot.Commands
         [Hidden]
         public async Task Migrate(CommandContext ctx)
         {
-            await using SunflowerUsersContext users = new SunflowerUsersContext();
+            await using SunflowerContext users = new SunflowerContext();
 
             if (users.Database.GetPendingMigrationsAsync().Result.Any())
             {
@@ -38,18 +38,18 @@ namespace Sunflower.Bot.Commands
         {
             await ctx.Channel.TriggerTypingAsync();
 
-            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            using (SunflowerContext usersContext = new SunflowerContext())
             {
                 foreach (var item in ctx.Guild.Members)
                 {
                     var check = false;
 
-                    if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
+                    /*if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
                     {
                         check = true;
-                    }
+                    }*/
 
-                    if (check == true)
+                    if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id) == true)
                     {
                         continue;
                     }
@@ -116,39 +116,37 @@ namespace Sunflower.Bot.Commands
                 Color = DiscordColor.Gold
             };
 
-            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            using SunflowerContext usersContext = new SunflowerContext();
+            foreach (var item in usersContext.UserProfiles)
             {
-                foreach (var item in usersContext.UserProfiles)
+                if (item.MemberId == user.Id && item.GuildId == user.Guild.Id)
                 {
-                    if (item.MemberId == user.Id && item.GuildId == user.Guild.Id)
+                    var botCheck = String.Empty;
+                    if (user.IsBot)
                     {
-                        var botCheck = String.Empty;
-                        if (user.IsBot)
-                        {
-                            botCheck = " Bot";
-                        }
-                        userinfoEmbed.WithAuthor($"{user.Username}#{user.Discriminator}" + botCheck, null, user.AvatarUrl);
-
-                        if (!user.IsBot)
-                        {
-                            userinfoEmbed.AddField("Количество солнц:", $":sunny: {item.MemberSunCount}", true);
-                        }
-                        
-                        userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
-                        userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
-
-                        var roles = string.Join(" ", user.Roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}"));
-
-                        if (roles != String.Empty)
-                        {
-                            userinfoEmbed.AddField("Роли:", roles);
-                        }
-                        
-                        userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
-                        userinfoEmbed.WithTimestamp(DateTime.Now);
-
-                        await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
+                        botCheck = " Bot";
                     }
+                    userinfoEmbed.WithAuthor($"{user.Username}#{user.Discriminator}" + botCheck, null, user.AvatarUrl);
+
+                    if (!user.IsBot)
+                    {
+                        userinfoEmbed.AddField("Количество солнц:", $":sunny: {item.MemberSunCount}", true);
+                    }
+
+                    userinfoEmbed.AddField("Текущий ник:", user.DisplayName, true);
+                    userinfoEmbed.AddField("Зашёл на сервер:", user.JoinedAt.DateTime.ToShortDateString(), true);
+
+                    var roles = string.Join(" ", user.Roles.OrderByDescending(x => x.Position).Select(x => $"{x.Mention}"));
+
+                    if (roles != String.Empty)
+                    {
+                        userinfoEmbed.AddField("Роли:", roles);
+                    }
+
+                    userinfoEmbed.WithThumbnail(user.AvatarUrl, 500, 500);
+                    userinfoEmbed.WithTimestamp(DateTime.Now);
+
+                    await ctx.Channel.SendMessageAsync(embed: userinfoEmbed).ConfigureAwait(false);
                 }
             }
 

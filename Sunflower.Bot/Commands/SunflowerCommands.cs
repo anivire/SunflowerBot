@@ -3,7 +3,9 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using Sunflower.DAL.Context;
+using Sunflower.Sunflower.DAL.Models;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
@@ -29,55 +31,80 @@ namespace Sunflower.Bot.Commands
 
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);
 
-            var reactionResult = await interactivity.WaitForReactionAsync(
-                x => x.Message == joinMessage &&
-                x.User == ctx.User &&
-                (x.Emoji == accept)).ConfigureAwait(false);
+            using SunflowerContext sunny = new SunflowerContext();
+            if (sunny.SunnyMessage.Any(x => x.GuildId == ctx.Guild.Id) == false)
+            {
+                var sunnyMes = new SunnyMessage()
+                {
+                    GuildId = ctx.Guild.Id,
+                    RoleId = role.Id,
+                    MessageId = joinMessage.Id
+                };
+
+                sunny.SunnyMessage.Add(sunnyMes);
+                await sunny.SaveChangesAsync();
+            }
+            else
+            {
+                sunny.SunnyMessage.Single(x => x.GuildId == ctx.Guild.Id).MessageId = joinMessage.Id;
+                sunny.SunnyMessage.Single(x => x.GuildId == ctx.Guild.Id).RoleId = role.Id;
+                await sunny.SaveChangesAsync();
+            }
+
+
+            /*var reactionResult = await interactivity.WaitForReactionAsync(
+            x => x.Message == joinMessage &&
+            x.User == ctx.User &&
+            (x.Emoji == accept)).ConfigureAwait(false);
 
             if (reactionResult.Result.Emoji == accept)
             {
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
 
-                // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);*/
-            }
+                // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);}*/
+        }
+        
+        [Command("test")]
+        public async Task Test(CommandContext ctx, DiscordRole role)
+        {
+            Console.WriteLine(role);
+            await ctx.Channel.SendMessageAsync(role.Id.ToString());
         }
 
         [Command("daily")]
-        [Description("")]
+        [Description("Получение ежедневной награды")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Daily(CommandContext ctx)
         {
-            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            using SunflowerContext usersContext = new SunflowerContext();
+            foreach (var item in usersContext.UserProfiles)
             {
-                foreach (var item in usersContext.UserProfiles)
+                if (item.MemberId == ctx.User.Id && item.GuildId == ctx.Guild.Id)
                 {
-                    if (item.MemberId == ctx.User.Id && item.GuildId == ctx.Guild.Id)
+                    if (DateTime.Compare(DateTime.Now, item.DailyCooldown) > 0)
                     {
-                        if (DateTime.Compare(DateTime.Now, item.DailyCooldown) > 0)
-                        {
-                            var reward = new Random().Next(25, 50);
-                            var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold);
+                        var reward = new Random().Next(25, 50);
+                        var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold);
 
-                            dailyEmbed.WithAuthor("Ежедневная награда", null, ctx.User.AvatarUrl);
-                            dailyEmbed.AddField("Солнышки", $"+{reward} :sunny:", true);
-                            //dailyEmbed.AddField("Растения", "`empty`", true);
-                            //dailyEmbed.AddField("Семена", "`empty`", true);
-                            dailyEmbed.WithTimestamp(DateTime.Now);
+                        dailyEmbed.WithAuthor("Ежедневная награда", null, ctx.User.AvatarUrl);
+                        dailyEmbed.AddField("Солнышки", $"+{reward} :sunny:", true);
+                        //dailyEmbed.AddField("Растения", "`empty`", true);
+                        //dailyEmbed.AddField("Семена", "`empty`", true);
+                        dailyEmbed.WithTimestamp(DateTime.Now);
 
-                            item.MemberSunCount += reward;
-                            item.DailyCooldown = DateTime.Now.AddHours(12);
-                            await usersContext.SaveChangesAsync();
+                        item.MemberSunCount += reward;
+                        item.DailyCooldown = DateTime.Now.AddHours(12);
+                        await usersContext.SaveChangesAsync();
 
-                            await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            var temp = item.DailyCooldown - DateTime.Now;
+                        await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        var temp = item.DailyCooldown - DateTime.Now;
 
-                            var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Вы уже получили ежедневную награду.\n" +
-                                $"Следующая награда будет доступна через **{temp.Hours}:{temp.Minutes}:{temp.Seconds}**");
-                            await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
-                        }
+                        var dailyEmbed = new DiscordEmbedBuilder().WithColor(DiscordColor.Gold).WithDescription("Вы уже получили ежедневную награду.\n" +
+                            $"Следующая награда будет доступна через **{temp.Hours}:{temp.Minutes}:{temp.Seconds}**");
+                        await ctx.Channel.SendMessageAsync(embed: dailyEmbed).ConfigureAwait(false);
                     }
                 }
             }
@@ -137,7 +164,7 @@ namespace Sunflower.Bot.Commands
                 thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
                 thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
 
-                using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                using (SunflowerContext usersContext = new SunflowerContext())
                 {
                     
                 }
@@ -192,7 +219,7 @@ namespace Sunflower.Bot.Commands
                         Color = DiscordColor.Gold
                     };
 
-                    using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+                    using (SunflowerContext usersContext = new SunflowerContext())
                     {
                         foreach (var item in usersContext.UserProfiles)
                         {

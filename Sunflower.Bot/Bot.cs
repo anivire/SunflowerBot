@@ -50,6 +50,8 @@ namespace Sunflower.Bot
             Client.MessageCreated += OnMessageCreated;
             Client.GuildMemberAdded += GuildMemberAdded;
             Client.GuildCreated += GuildCreate;
+            Client.MessageReactionAdded += ReactionAdded;
+            Client.MessageReactionRemoved += ReactionRemoved;
             //Client.GuildAvailable += GuildAvailable;
 
             Client.UseInteractivity(new InteractivityConfiguration
@@ -63,7 +65,7 @@ namespace Sunflower.Bot
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 DmHelp = false,
-                EnableDefaultHelp = false,
+                EnableDefaultHelp = true,
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -79,6 +81,39 @@ namespace Sunflower.Bot
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
+        }
+
+        private async Task ReactionRemoved(MessageReactionRemoveEventArgs e)
+        {
+            using SunflowerContext sunnyContext = new SunflowerContext();
+            if (sunnyContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
+            {
+                if (e.Emoji.Name == DiscordEmoji.FromName(e.Client, ":sunflower:"))
+                {
+                    foreach (var item in sunnyContext.SunnyMessage)
+                    {
+                        await e.Guild.Members.Values.Single(x => x.Id == e.User.Id).RevokeRoleAsync(e.Guild.Roles.Values.Single(x => x.Id == item.RoleId));
+                    }
+                }
+            }
+        }
+
+        private async Task ReactionAdded(MessageReactionAddEventArgs e)
+        {
+            using SunflowerContext sunnyContext = new SunflowerContext();
+            if (sunnyContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
+            {
+                Console.WriteLine("message test completed");
+                if (e.Emoji.Name == DiscordEmoji.FromName(e.Client, ":sunflower:"))
+                {
+                    Console.WriteLine("Эмодзи прошёл");
+                    foreach (var item in sunnyContext.SunnyMessage)
+                    {
+                        await e.Guild.Members.Values.Single(x => x.Id == e.User.Id).GrantRoleAsync(e.Guild.Roles.Values.Single(x => x.Id == item.RoleId));
+                        Console.WriteLine("role given");
+                    }
+                }
+            }
         }
 
         private async Task OnCommandError(CommandErrorEventArgs e)
@@ -99,7 +134,11 @@ namespace Sunflower.Bot
                     errorEmbed.WithDescription("У вас нет прав на выполнение данной команды.");
                     await Client.SendMessageAsync(e.Context.Channel, embed: errorEmbed).ConfigureAwait(false);
                 }
-            }           
+            }
+            else
+            {
+                Console.WriteLine(e.Exception.Message);
+            }
         }
 
         private Task ClientReady(ReadyEventArgs e)
@@ -124,35 +163,33 @@ namespace Sunflower.Bot
 
         private static async Task GuildMemberAdded(GuildMemberAddEventArgs e)
         {
-            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            using SunflowerContext usersContext = new SunflowerContext();
+            var check = false;
+
+            if (usersContext.UserProfiles.Any(x => x.MemberId == e.Member.Id && x.GuildId == e.Guild.Id))
             {
-                var check = false;
+                check = true;
+            }
 
-                if (usersContext.UserProfiles.Any(x => x.MemberId == e.Member.Id))
+            if (check == false)
+            {
+                var user = new Profile()
                 {
-                    check = true;
-                }
+                    GuildId = e.Guild.Id,
+                    MemberId = e.Member.Id,
+                    MemberUsername = e.Member.Username,
+                    MemberSunCount = 0,
+                    DailyCooldown = DateTime.Now
+                };
 
-                if (check == false)
-                {
-                    var user = new Profile()
-                    {
-                        GuildId = e.Guild.Id,
-                        MemberId = e.Member.Id,
-                        MemberUsername = e.Member.Username,
-                        MemberSunCount = 0,
-                        DailyCooldown = DateTime.Now
-                    };
-
-                    usersContext.UserProfiles.Add(user);
-                    await usersContext.SaveChangesAsync();
-                }
+                usersContext.UserProfiles.Add(user);
+                await usersContext.SaveChangesAsync();
             }
         }
 
         private static async Task GuildCreate(GuildCreateEventArgs e)
         {
-            using (SunflowerUsersContext usersContext = new SunflowerUsersContext())
+            using (SunflowerContext usersContext = new SunflowerContext())
             {
                 foreach (var item in e.Guild.Members)
                 {
