@@ -1,9 +1,6 @@
-﻿using DSharpPlus.Entities;
-using Sunflower.DAL.Models;
-
-namespace Sunflower.Sunflower.DAL.Models
+﻿namespace Sunflower.DAL.Models
 {
-    class SunnyMessage : Entity
+    class MessageReaction : Entity
     {
         public ulong GuildId { get; set; }
         public ulong MessageId { get; set; }

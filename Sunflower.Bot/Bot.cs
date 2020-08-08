@@ -14,8 +14,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Sunflower.Bot
 {
@@ -52,7 +55,7 @@ namespace Sunflower.Bot
             Client.GuildCreated += GuildCreate;
             Client.MessageReactionAdded += ReactionAdded;
             Client.MessageReactionRemoved += ReactionRemoved;
-            //Client.GuildAvailable += GuildAvailable;
+            Client.GuildAvailable += GuildAvaible;
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
@@ -83,14 +86,83 @@ namespace Sunflower.Bot
             await Task.Delay(-1);
         }
 
+        public async Task Timer()
+        {
+            Timer t = new Timer(300000);
+            t.AutoReset = true;
+            t.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            t.Start();
+
+            Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Таймер проверки сервером успешно запущен.", DateTime.Now);
+        }
+        private async void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            var serversEmbed = new DiscordEmbedBuilder()
+            {
+                Color = DiscordColor.Gold
+            };
+
+            var listName = String.Empty;
+            var listID = String.Empty;
+            var listMembers = String.Empty;
+
+            foreach (var item in Client.Guilds.Values)
+            {
+                listName += string.Join(" ", item.Name + "\n");
+                listID += string.Join(" ", item.Id + "\n");
+                listMembers += string.Join(" ", item.MemberCount + "\n");
+            }
+
+            serversEmbed.WithAuthor("Список серверов, на которых есть бот:", null, Client.Guilds.Values.Single(x => x.Id == 720667905695678503).CurrentMember.AvatarUrl);
+            serversEmbed.AddField("Название:", listName, true);
+            serversEmbed.AddField("ID сервера:", listID, true);
+            serversEmbed.AddField("Участники:", listMembers, true);
+            serversEmbed.WithFooter("Список серверов обновится через 5 минут • " + DateTime.Now);
+
+            DiscordEmbed newEmbed = serversEmbed;
+
+            await Client.Guilds.Values.Single(x => x.Id == 720667905695678503).GetChannel(741634733745897512).GetMessageAsync(741642171488403496).Result.ModifyAsync(embed: newEmbed);
+        }
+
+        private async Task GuildAvaible(GuildCreateEventArgs e)
+        {
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Проверка на целостность базы данных для гильдии {e.Guild.Name} начата...", DateTime.Now);
+
+            using DatabaseContext databaseContext = new DatabaseContext();
+
+            foreach (var item in e.Guild.Members)
+            {
+                if (databaseContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id) == true)
+                {
+                    continue;
+                }
+                else
+                {
+                    var user = new Profile()
+                    {
+                        GuildId = e.Guild.Id,
+                        MemberId = item.Key,
+                        MemberUsername = item.Value.Username,
+                        MemberSunCount = 0,
+                        DailyCooldown = DateTime.Now
+                    };
+
+                    databaseContext.UserProfiles.Add(user);
+                    await databaseContext.SaveChangesAsync();
+                }
+            }
+
+            e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Проверка баз данных для гильдии {e.Guild.Name} была успешно завершена.", DateTime.Now);
+        }
+
         private async Task ReactionRemoved(MessageReactionRemoveEventArgs e)
         {
-            using SunflowerContext sunnyContext = new SunflowerContext();
-            if (sunnyContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
+            using DatabaseContext databaseContext = new DatabaseContext();
+            if (databaseContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
             {
                 if (e.Emoji.Name == DiscordEmoji.FromName(e.Client, ":sunflower:"))
                 {
-                    foreach (var item in sunnyContext.SunnyMessage)
+                    foreach (var item in databaseContext.SunnyMessage)
                     {
                         await e.Guild.Members.Values.Single(x => x.Id == e.User.Id).RevokeRoleAsync(e.Guild.Roles.Values.Single(x => x.Id == item.RoleId));
                     }
@@ -100,17 +172,14 @@ namespace Sunflower.Bot
 
         private async Task ReactionAdded(MessageReactionAddEventArgs e)
         {
-            using SunflowerContext sunnyContext = new SunflowerContext();
-            if (sunnyContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
+            using DatabaseContext databaseContext = new DatabaseContext();
+            if (databaseContext.SunnyMessage.Any(x => x.MessageId == e.Message.Id))
             {
-                Console.WriteLine("message test completed");
                 if (e.Emoji.Name == DiscordEmoji.FromName(e.Client, ":sunflower:"))
                 {
-                    Console.WriteLine("Эмодзи прошёл");
-                    foreach (var item in sunnyContext.SunnyMessage)
+                    foreach (var item in databaseContext.SunnyMessage)
                     {
                         await e.Guild.Members.Values.Single(x => x.Id == e.User.Id).GrantRoleAsync(e.Guild.Roles.Values.Single(x => x.Id == item.RoleId));
-                        Console.WriteLine("role given");
                     }
                 }
             }
@@ -122,7 +191,7 @@ namespace Sunflower.Bot
 
             if (e.Exception is ChecksFailedException)
             {
-                var propError = (ChecksFailedException)e.Exception;
+                ChecksFailedException propError = (ChecksFailedException)e.Exception;
 
                 if (propError.FailedChecks[0] is RequireRolesAttribute)
                 {
@@ -153,6 +222,8 @@ namespace Sunflower.Bot
             Client.UpdateStatusAsync(activity, UserStatus.Online, null);
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", "Статус бота успешно изменён.", DateTime.Now);
 
+            Timer();
+
             return Task.CompletedTask;
         }
 
@@ -163,15 +234,9 @@ namespace Sunflower.Bot
 
         private static async Task GuildMemberAdded(GuildMemberAddEventArgs e)
         {
-            using SunflowerContext usersContext = new SunflowerContext();
-            var check = false;
+            using DatabaseContext databaseContext = new DatabaseContext();
 
-            if (usersContext.UserProfiles.Any(x => x.MemberId == e.Member.Id && x.GuildId == e.Guild.Id))
-            {
-                check = true;
-            }
-
-            if (check == false)
+            if (databaseContext.UserProfiles.Any(x => (x.MemberId == e.Member.Id) && x.GuildId == e.Guild.Id) == false)
             {
                 var user = new Profile()
                 {
@@ -182,45 +247,38 @@ namespace Sunflower.Bot
                     DailyCooldown = DateTime.Now
                 };
 
-                usersContext.UserProfiles.Add(user);
-                await usersContext.SaveChangesAsync();
+                databaseContext.UserProfiles.Add(user);
+                await databaseContext.SaveChangesAsync();
             }
         }
 
         private static async Task GuildCreate(GuildCreateEventArgs e)
         {
-            using (SunflowerContext usersContext = new SunflowerContext())
+            using DatabaseContext databaseContext = new DatabaseContext();
+
+            foreach (var item in e.Guild.Members)
             {
-                foreach (var item in e.Guild.Members)
+                if (databaseContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id) == true)
                 {
-                    var check = false;
-
-                    if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
-                    {
-                        check = true;
-                    }
-
-                    if (check == true)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        var user = new Profile()
-                        {
-                            GuildId = e.Guild.Id,
-                            MemberId = item.Key,
-                            MemberUsername = item.Value.Username,
-                            MemberSunCount = 0,
-                            DailyCooldown = DateTime.Now
-                        };
-
-                        usersContext.UserProfiles.Add(user);
-                        await usersContext.SaveChangesAsync();
-                    }
-
+                    continue;
                 }
+                else
+                {
+                    var user = new Profile()
+                    {
+                        GuildId = e.Guild.Id,
+                        MemberId = item.Key,
+                        MemberUsername = item.Value.Username,
+                        MemberSunCount = 0,
+                        DailyCooldown = DateTime.Now
+                    };
+
+                    databaseContext.UserProfiles.Add(user);
+                    await databaseContext.SaveChangesAsync();
+                }
+
             }
+            
 
             e.Client.DebugLogger.LogMessage(LogLevel.Info, "Sunflower", $"Бот присоединился к серверу {e.Guild.Name}, база данных была успешно обновлена.", DateTime.Now);
         }

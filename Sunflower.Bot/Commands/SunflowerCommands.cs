@@ -3,7 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using Sunflower.DAL.Context;
-using Sunflower.Sunflower.DAL.Models;
+using Sunflower.DAL.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,10 +31,10 @@ namespace Sunflower.Bot.Commands
 
             await joinMessage.CreateReactionAsync(accept).ConfigureAwait(false);
 
-            using SunflowerContext sunny = new SunflowerContext();
+            using DatabaseContext sunny = new DatabaseContext();
             if (sunny.SunnyMessage.Any(x => x.GuildId == ctx.Guild.Id) == false)
             {
-                var sunnyMes = new SunnyMessage()
+                var sunnyMes = new MessageReaction()
                 {
                     GuildId = ctx.Guild.Id,
                     RoleId = role.Id,
@@ -50,33 +50,15 @@ namespace Sunflower.Bot.Commands
                 sunny.SunnyMessage.Single(x => x.GuildId == ctx.Guild.Id).RoleId = role.Id;
                 await sunny.SaveChangesAsync();
             }
-
-
-            /*var reactionResult = await interactivity.WaitForReactionAsync(
-            x => x.Message == joinMessage &&
-            x.User == ctx.User &&
-            (x.Emoji == accept)).ConfigureAwait(false);
-
-            if (reactionResult.Result.Emoji == accept)
-            {
-                await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
-
-                // await joinMessage.DeleteReactionAsync(accept, ctx.User).ConfigureAwait(false);}*/
-        }
-        
-        [Command("test")]
-        public async Task Test(CommandContext ctx, DiscordRole role)
-        {
-            Console.WriteLine(role);
-            await ctx.Channel.SendMessageAsync(role.Id.ToString());
         }
 
         [Command("daily")]
+        [Aliases("d", "reward", "r")]
         [Description("Получение ежедневной награды")]
         [RequireRoles(RoleCheckMode.None)]
         public async Task Daily(CommandContext ctx)
         {
-            using SunflowerContext usersContext = new SunflowerContext();
+            using DatabaseContext usersContext = new DatabaseContext();
             foreach (var item in usersContext.UserProfiles)
             {
                 if (item.MemberId == ctx.User.Id && item.GuildId == ctx.Guild.Id)
@@ -164,12 +146,11 @@ namespace Sunflower.Bot.Commands
                 thiefEmbed.WithAuthor(ctx.User.Username + $" начинает грабить " + user.Username, null, ctx.User.AvatarUrl);
                 thiefEmbed.WithDescription($"Шанс на успех:\t{statusBar} {randomPercent}%");
 
-                using (SunflowerContext usersContext = new SunflowerContext())
+                using (DatabaseContext usersContext = new DatabaseContext())
                 {
                     
                 }
-
-                
+ 
                 await ctx.Channel.SendMessageAsync(embed: thiefEmbed).ConfigureAwait(false);
             }
         }
@@ -219,7 +200,7 @@ namespace Sunflower.Bot.Commands
                         Color = DiscordColor.Gold
                     };
 
-                    using (SunflowerContext usersContext = new SunflowerContext())
+                    using (DatabaseContext usersContext = new DatabaseContext())
                     {
                         foreach (var item in usersContext.UserProfiles)
                         {

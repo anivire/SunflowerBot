@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +7,6 @@ using Sunflower.DAL.Models;
 using System;
 using System.Data;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sunflower.Bot.Commands
@@ -20,7 +18,9 @@ namespace Sunflower.Bot.Commands
         [Hidden]
         public async Task Migrate(CommandContext ctx)
         {
-            await using SunflowerContext users = new SunflowerContext();
+            await ctx.Channel.TriggerTypingAsync();
+
+            await using DatabaseContext users = new DatabaseContext();
 
             if (users.Database.GetPendingMigrationsAsync().Result.Any())
             {
@@ -38,17 +38,10 @@ namespace Sunflower.Bot.Commands
         {
             await ctx.Channel.TriggerTypingAsync();
 
-            using (SunflowerContext usersContext = new SunflowerContext())
+            using (DatabaseContext usersContext = new DatabaseContext())
             {
                 foreach (var item in ctx.Guild.Members)
                 {
-                    var check = false;
-
-                    /*if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id))
-                    {
-                        check = true;
-                    }*/
-
                     if (usersContext.UserProfiles.Any(x => (x.MemberId == item.Key) && x.GuildId == item.Value.Guild.Id) == true)
                     {
                         continue;
@@ -75,37 +68,6 @@ namespace Sunflower.Bot.Commands
             await ctx.Channel.SendMessageAsync(embed: createDBEmbed).ConfigureAwait(false);
         }
 
-        [Command("servers")]
-        [Description("Выводит список всех серверов на которых присутствует бот")]
-        [RequireRoles(RoleCheckMode.Any, "Sun Sponsor")]
-        [Hidden]
-        public async Task Servers(CommandContext ctx)
-        {
-            var serversEmbed = new DiscordEmbedBuilder()
-            {
-                Color = DiscordColor.Gold
-            };
-
-            var listName = String.Empty;
-            var listID = String.Empty;
-            var listMembers = String.Empty;
-
-            foreach (var item in ctx.Client.Guilds.Values)
-            {
-                listName += string.Join(" ", item.Name + "\n");
-                listID += string.Join(" ", item.Id + "\n");
-                listMembers += string.Join(" ", item.MemberCount + "\n");
-            }
-
-            serversEmbed.WithAuthor("Список серверов:", null, ctx.Guild.CurrentMember.AvatarUrl);
-            serversEmbed.AddField("Название:", listName, true);
-            serversEmbed.AddField("ID:", listID, true);
-            serversEmbed.AddField("Кол-во:", listMembers, true);
-            serversEmbed.WithTimestamp(DateTime.Now);
-
-            await ctx.Channel.SendMessageAsync(embed: serversEmbed).ConfigureAwait(false);
-        }
-
         [Command("userinfo")]
         [Description("Информация о пользователе")]
         [RequireRoles(RoleCheckMode.None)]
@@ -116,7 +78,7 @@ namespace Sunflower.Bot.Commands
                 Color = DiscordColor.Gold
             };
 
-            using SunflowerContext usersContext = new SunflowerContext();
+            using DatabaseContext usersContext = new DatabaseContext();
             foreach (var item in usersContext.UserProfiles)
             {
                 if (item.MemberId == user.Id && item.GuildId == user.Guild.Id)

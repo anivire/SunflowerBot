@@ -179,7 +179,7 @@ namespace Sunflower.Bot.Commands
             botInfoEmbed.WithThumbnail("https://media.discordapp.net/attachments/720667905695678508/739437303499325510/cockflower-dance.gif", 500, 500);     
             botInfoEmbed.AddField("Исходный код:", "GitHub: https://github.com/aniv1re/SunflowerBot", false);
             botInfoEmbed.AddField("Автор аватара бота:", "VK: https://vk.com/pixel_youkai", false);
-            botInfoEmbed.AddField("Дата создания:", ctx.Guild.CurrentMember.CreationTimestamp.DateTime.ToShortDateString(), true);
+            botInfoEmbed.AddField("Пинг:", ctx.Client.Ping.ToString(), true);
             botInfoEmbed.AddField("ID бота:", ctx.Guild.CurrentMember.Id.ToString(), true);
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(File.ReadAllText(@"D:\code\Sunflower\Config.json"));
